@@ -14,28 +14,6 @@ export function HeroSection() {
         }}
       ></div>
 
-      {/* Navigation */}
-      <nav className="relative z-20 flex items-center justify-between p-6 lg:px-12">
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-amber-800 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-lg">TN</span>
-          </div>
-          <span className="text-2xl font-bold text-amber-900">Tây Nguyên Nuts</span>
-        </div>
-        <div className="hidden md:flex items-center space-x-8">
-          <a href="#products" className="text-amber-800 hover:text-amber-900 font-medium">
-            Sản phẩm
-          </a>
-          <a href="#story" className="text-amber-800 hover:text-amber-900 font-medium">
-            Câu chuyện
-          </a>
-          <a href="#contact" className="text-amber-800 hover:text-amber-900 font-medium">
-            Liên hệ
-          </a>
-          <Button className="bg-amber-800 hover:bg-amber-900 text-white">Đặt hàng ngay</Button>
-        </div>
-      </nav>
-
       {/* Hero Content */}
       <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-100px)] px-4">
         <div className="max-w-4xl mx-auto text-center">

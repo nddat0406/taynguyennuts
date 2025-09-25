@@ -1,21 +1,25 @@
 "use client"
 
 import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { ALL_PRODUCTS, formatPrice } from "@/lib/products"
+import { formatPrice } from "@/lib/products"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
+import type { Product } from "@/types"
 
-export function ProductsSection() {
+interface ProductsSectionProps {
+  products: Product[]
+}
+
+export function ProductsSection({ products }: ProductsSectionProps) {
   const { addToCart } = useCart()
   const { toast } = useToast()
-
-  const handleQuickAddToCart = (e: React.MouseEvent, product: (typeof ALL_PRODUCTS)[0]) => {
-    e.preventDefault() // Prevent navigation to product page
+  
+  const handleQuickAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault()
     e.stopPropagation()
 
     if (!product.inStock) return
@@ -25,6 +29,11 @@ export function ProductsSection() {
       title: "Đã thêm vào giỏ hàng",
       description: `${product.name}`,
     })
+  }
+
+  const getMainImage = (product: Product) => {
+    const mainImage = product.product_images?.find((img) => img.isMainImage)
+    return mainImage?.url || product.product_images?.[0]?.url || "/placeholder.svg?height=400&width=400"
   }
 
   return (
@@ -42,7 +51,7 @@ export function ProductsSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {ALL_PRODUCTS.map((product) => (
+          {products.map((product) => (
             <Card
               key={product.id}
               className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg overflow-hidden"
@@ -50,7 +59,7 @@ export function ProductsSection() {
               <Link href={`/products/${product.id}`}>
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={product.image || "/placeholder.svg"}
+                    src={getMainImage(product) || "/placeholder.svg"}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -61,7 +70,6 @@ export function ProductsSection() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-2xl font-bold text-orange-600">
                       {formatPrice(product.price)}
-                      <span className="text-sm text-gray-500 font-normal">/{product.weight}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -71,7 +79,6 @@ export function ProductsSection() {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        // This will navigate to the product page
                         window.location.href = `/products/${product.id}`
                       }}
                     >

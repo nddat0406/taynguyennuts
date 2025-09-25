@@ -1,13 +1,18 @@
+export interface ProductImages {
+  url: string
+  isMainImage: boolean
+  alt?: string
+}
+
 export interface Product {
-  id: string
+  id: number 
   name: string
   description: string
   price: number
-  image: string
-  category: "nuts" | "coffee" | "dried-fruits" | "specialties"
+  product_images: ProductImages[]
+  category?: "nuts" | "coffee" | "dried-fruits" | "specialties"
   inStock: boolean
-  weight?: string
-  origin?: string
+  weight: string
 }
 
 export interface Testimonial {
@@ -54,9 +59,9 @@ export interface CartState {
 export interface CartContextType {
   cart: CartState
   addToCart: (product: Product, quantity?: number) => void
-  removeFromCart: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  removeFromCart: (productId: number) => void
+  updateQuantity: (productId: number, quantity: number) => void
   clearCart: () => void
-  isInCart: (productId: string) => boolean
-  getItemQuantity: (productId: string) => number
+  isInCart: (productId: number) => boolean
+  getItemQuantity: (productId: number) => number
 }

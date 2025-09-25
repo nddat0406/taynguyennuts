@@ -19,41 +19,6 @@ export const SOCIAL_LINKS: SocialLinks = {
   zalo: "https://zalo.me/taynyguennuts",
 }
 
-export const FEATURED_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Hạt Điều Rang Muối",
-    description: "Hạt điều cao cấp rang muối thơm ngon, giòn tan",
-    price: 250000,
-    image: "/cashew-nuts.jpg",
-    category: "nuts",
-    inStock: true,
-    weight: "500g",
-    origin: "Đắk Lắk",
-  },
-  {
-    id: "2",
-    name: "Cà Phê Robusta",
-    description: "Cà phê Robusta nguyên chất từ cao nguyên Đắk Lắk",
-    price: 180000,
-    image: "/coffee-beans.jpg",
-    category: "coffee",
-    inStock: true,
-    weight: "1kg",
-    origin: "Buôn Ma Thuột",
-  },
-  {
-    id: "3",
-    name: "Hạt Macca Nướng",
-    description: "Hạt macca nướng thơm bùi, bổ dưỡng cao",
-    price: 450000,
-    image: "/macadamia-nuts.jpg",
-    category: "nuts",
-    inStock: true,
-    weight: "300g",
-    origin: "Đắk Lắk",
-  },
-]
 
 export const TESTIMONIALS: Testimonial[] = [
   {

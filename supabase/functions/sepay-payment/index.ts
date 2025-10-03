@@ -9,18 +9,18 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { supabase } from "../_shared/supabase.ts";
 
 export class PostSepayPaymentDto {
-  id: string;
-  gateway: string;
-  transactionDate: string;
-  accountNumber: string;
-  code: null;
-  content: string;
-  transferType: string;
-  transferAmount: number;
-  accumulated: number;
-  subAccount: string;
-  referenceCode: number;
-  description: number;
+  id: string | undefined;
+  gateway: string | undefined;
+  transactionDate: string | undefined;
+  accountNumber: string | undefined;
+  code: null | undefined;
+  content: string | undefined;
+  transferType: string | undefined;
+  transferAmount: number | undefined;
+  accumulated: number | undefined;
+  subAccount: string | undefined;
+  referenceCode: number | undefined;
+  description: number | undefined;
 }
 
 export const extractTokenFromHeader = (

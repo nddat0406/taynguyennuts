@@ -1,16 +1,15 @@
 "use client";
 
-import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
 import React, { useEffect } from "react";
 
 type Props = {
   paymentCode: string;
+  setIsPaid: (paid: boolean) => void;
 };
 
-const RealtimeOrders = (props: Props) => {
+const RealtimeOrders = ({ paymentCode, setIsPaid }: Props) => {
   const supabase = createClient();
-  const { toast } = useToast();
 
   useEffect(() => {
     const channel = supabase
@@ -20,16 +19,11 @@ const RealtimeOrders = (props: Props) => {
         { event: "*", schema: "public", table: "orders" },
         (payload) => {
           const pl = payload.new as any;
-          console.log(pl, props.paymentCode);
           if (
-            pl.payment_code === props.paymentCode &&
+            pl.payment_code === paymentCode &&
             pl.payment_status === "success"
           ) {
-            toast({
-              title: "Thanh toán thành công!!!",
-              description:
-                "Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận đơn hàng.",
-            });
+            setIsPaid(true); 
           }
         }
       )
@@ -40,9 +34,9 @@ const RealtimeOrders = (props: Props) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [paymentCode, setIsPaid]);
 
-  return <div></div>;
+  return null;
 };
 
 export default RealtimeOrders;

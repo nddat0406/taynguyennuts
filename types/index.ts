@@ -10,11 +10,14 @@ export interface Product {
   description: string
   price: number
   product_images: ProductImages[]
-  category?: "nuts" | "coffee" | "dried-fruits" | "specialties"
   inStock: boolean
   weight: string
+  category?: Category
 }
-
+export interface Category {
+  id: number
+  name: string
+}
 export interface Testimonial {
   id: string
   name: string

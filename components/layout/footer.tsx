@@ -19,20 +19,20 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=61581550020967"
                 className="w-10 h-10 bg-amber-800 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://zalo.me/0979938675"
                 className="w-10 h-10 bg-amber-800 rounded-full flex items-center justify-center hover:bg-amber-700 transition-colors"
               >
-                <Instagram className="w-5 h-5" />
+                <img src="/Icon_of_Zalo.svg.webp" alt="Zalo" className="w-5 h-5" />
               </a>
             </div>
           </div>
-
+    
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-6">Liên hệ</h3>

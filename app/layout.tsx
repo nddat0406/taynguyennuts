@@ -7,7 +7,6 @@ import { Suspense } from "react"
 import { CartProvider } from "@/contexts/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 export const metadata: Metadata = {
   title: "Tây Nguyên Nuts - Premium Vietnamese Nuts & Agricultural Products",
   description:
@@ -49,6 +48,7 @@ export default function RootLayout({
           <Toaster />
           <Analytics />
         </CartProvider>
+
       </body>
     </html>
   )

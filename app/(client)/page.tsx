@@ -35,22 +35,19 @@ export default async function HomePage() {
 
   return (
     <>
-      <Header />
       <main className="min-h-screen">
-        <p className="text-center text-2xl font-bold text-gray-800 py-8">
-          {productsData.length} Products Available
-        </p>
         <HeroSection />
         <ProductsSection products={productsData} />
         <StorySection />
         <ValuesSection />
         <TestimonialsSection />
         <CtaSection />
-        <Footer />
+        
       </main>
       <Suspense fallback={null}>
         <OrderSuccessToast />
       </Suspense>
+
     </>
   )
 }

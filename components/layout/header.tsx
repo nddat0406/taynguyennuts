@@ -11,7 +11,7 @@ export function Header() {
 
   const navigation = [
     { name: "Trang chủ", href: "/" },
-    { name: "Sản phẩm", href: "/#products" },
+    { name: "Sản phẩm", href: "/products" },
     { name: "Về chúng tôi", href: "/#story" },
     { name: "Liên hệ", href: "/#contact" },
   ]
@@ -22,9 +22,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-amber-800 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TN</span>
-            </div>
+            <img src="/logo.jpg" alt="Logo" className="w-8 h-8" />
             <span className="font-bold text-xl text-amber-900">Tây Nguyên Nuts</span>
           </Link>
 

@@ -17,6 +17,7 @@ import { useCart } from "@/hooks/use-cart"
 import { formatPrice } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "@/components/layout/header"
+import AddressInput from "@/components/ui/address-input"
 
 interface CustomerInfo {
   fullName: string
@@ -24,7 +25,6 @@ interface CustomerInfo {
   phone: string
   address: string
   city: string
-  district: string
   ward: string
   notes: string
 }
@@ -62,7 +62,6 @@ export default function CheckoutPage() {
     phone: "",
     address: "",
     city: "",
-    district: "",
     ward: "",
     notes: "",
   })
@@ -97,6 +96,14 @@ export default function CheckoutPage() {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleLocationChange = (field: string, value: string) => {
+    if (field === "province") {
+      setCustomerInfo((prev) => ({ ...prev, city: value }))
+    } else if (field === "ward") {
+      setCustomerInfo((prev) => ({ ...prev, ward: value }))
+    }
+  }
+
   const validateForm = (): boolean => {
     const required = ["fullName", "email", "phone", "address", "city"]
     return required.every((field) => customerInfo[field as keyof CustomerInfo].trim() !== "")
@@ -107,7 +114,6 @@ export default function CheckoutPage() {
       toast({
         title: "Thông tin chưa đầy đủ",
         description: "Vui lòng điền đầy đủ thông tin bắt buộc",
-        variant: "destructive",
       })
       return
     }
@@ -132,7 +138,6 @@ export default function CheckoutPage() {
       toast({
         title: "Có lỗi xảy ra",
         description: "Vui lòng thử lại sau",
-        variant: "destructive",
       })
     } finally {
       setIsSubmitting(false)
@@ -144,7 +149,6 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Header />
       <main className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Back Navigation */}
@@ -217,35 +221,10 @@ export default function CheckoutPage() {
                       placeholder="Số nhà, tên đường"
                     />
                   </div>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="ward">Phường/Xã</Label>
-                      <Input
-                        id="ward"
-                        value={customerInfo.ward}
-                        onChange={(e) => handleInputChange("ward", e.target.value)}
-                        placeholder="Phường/Xã"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="district">Quận/Huyện</Label>
-                      <Input
-                        id="district"
-                        value={customerInfo.district}
-                        onChange={(e) => handleInputChange("district", e.target.value)}
-                        placeholder="Quận/Huyện"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="city">Tỉnh/Thành phố *</Label>
-                      <Input
-                        id="city"
-                        value={customerInfo.city}
-                        onChange={(e) => handleInputChange("city", e.target.value)}
-                        placeholder="Tỉnh/Thành phố"
-                      />
-                    </div>
-                  </div>
+                  <AddressInput
+                    onLocationChange={handleLocationChange}
+                    location={{ province: customerInfo.city, ward: customerInfo.ward }}
+                  />
                   <div>
                     <Label htmlFor="notes">Ghi chú đơn hàng</Label>
                     <Textarea
@@ -301,7 +280,7 @@ export default function CheckoutPage() {
                     <div key={item.product.id} className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
+                          src={item.product.product_images[0]?.url || "/placeholder.svg"}
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                         />

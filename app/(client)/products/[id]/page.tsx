@@ -50,7 +50,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <Head>
         <meta name="og:type" content="product" />
       </Head>
-      <Header />
       <main className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Back Navigation */}

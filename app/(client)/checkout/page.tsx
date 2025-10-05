@@ -21,6 +21,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { error } from "console";
 import AddressInput from "@/components/ui/address-input"
+import { ORDER_STATUSES } from "@/lib/constants";
 
 interface CustomerInfo {
   fullName: string
@@ -132,7 +133,6 @@ const handleSubmitOrder = async () => {
     toast({
       title: "Thông tin chưa đầy đủ",
       description: "Vui lòng điền đầy đủ thông tin bắt buộc",
-      variant: "destructive",
     });
     return;
   }
@@ -154,7 +154,7 @@ const handleSubmitOrder = async () => {
           address: customerInfo.address,
           province: customerInfo.city,
           ward: customerInfo.ward || "",
-          order_status: "pending",
+          order_status: ORDER_STATUSES.PENDING_CONFIRMATION,
           payment_code: paymentCode,
           payment_status:
             selectedPayment === "bank_transfer" ? "pending" : "cod",
@@ -200,7 +200,6 @@ const handleSubmitOrder = async () => {
     toast({
       title: "Có lỗi xảy ra",
       description: "Vui lòng thử lại sau",
-      variant: "destructive",
     });
   } finally {
     setIsSubmitting(false);

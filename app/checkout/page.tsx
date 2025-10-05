@@ -120,8 +120,7 @@ export default function CheckoutPage() {
       (field) => customerInfo[field as keyof CustomerInfo].trim() !== ""
     );
   };
-
- const handleSubmitOrder = async () => {
+const handleSubmitOrder = async () => {
   if (!validateForm()) {
     toast({
       title: "Thông tin chưa đầy đủ",
@@ -135,51 +134,60 @@ export default function CheckoutPage() {
 
   const shippingFee = cart.total >= 500000 ? 0 : 30000;
   const finalTotal = cart.total + shippingFee;
+  const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
 
   try {
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert([
+        {
+          name: customerInfo.fullName,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          province: customerInfo.city,
+          ward: customerInfo.ward || "",
+          order_status: "pending",
+          payment_code: paymentCode,
+          payment_status:
+            selectedPayment === "bank_transfer" ? "pending" : "cod",
+          total: finalTotal,
+          note: customerInfo.notes || "",
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (orderError || !order) {
+      throw orderError;
+    }
+    const orderDetails = cart.items.map((item) => ({
+      order_id: order.id,
+      product_id: item.product.id,
+      quantity: item.quantity,
+      created_at: new Date().toISOString(),
+    }));
+
+    const { error: detailError } = await supabase
+      .from("order_details")
+      .insert(orderDetails);
+
+    if (detailError) {
+      throw detailError;
+    }
     if (selectedPayment === "bank_transfer") {
-      try {
-        const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
-
-        const { data, error } = await supabase
-          .from("orders")
-          .insert({
-            name: customerInfo.fullName,
-            email: customerInfo.email,
-            payment_code: paymentCode,
-            total: finalTotal, 
-          })
-          .select("payment_code")
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          router.push(
-            `/payment?locale=vi&amount=${finalTotal}&content=${data.payment_code}`
-          );
-        }
-      } catch (error) {
-        console.log(error);
-        toast({
-          title: "Có lỗi xảy ra",
-          description: "Vui lòng thử lại sau",
-          variant: "destructive",
-        });
-      }
+      router.push(
+        `/payment?locale=vi&amount=${finalTotal}&content=${paymentCode}`
+      );
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    clearCart();
 
+    clearCart();
     toast({
       title: "Đặt hàng thành công!",
-      description:
-        "Chúng tôi sẽ liên hệ với bạn sớm nhất để xác nhận đơn hàng",
+      description: "Chúng tôi sẽ liên hệ để xác nhận đơn hàng.",
     });
-
     router.push("/?order=success");
   } catch (error) {
     toast({

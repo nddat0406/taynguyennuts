@@ -78,8 +78,6 @@ export default function PaymentPage({ searchParams }: Props) {
 
     checkPayment();
   }, [transferContent]);
-
-  // ⏳ Countdown
   useEffect(() => {
     if (timeLeft <= 0) {
       setIsExpired(true);

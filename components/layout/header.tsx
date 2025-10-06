@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { CartDrawer } from "@/components/cart/cart-drawer"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
+import Image from "next/image"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,6 +13,7 @@ export function Header() {
   const navigation = [
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
+    { name: "Tra cứu đơn hàng", href: "/order-tracking" },
     { name: "Về chúng tôi", href: "/#story" },
     { name: "Liên hệ", href: "/#contact" },
   ]
@@ -22,7 +24,9 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <img src="/logo.jpg" alt="Logo" className="w-8 h-8" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
+              <Image src="/logo.jpg" alt="Tây Nguyên Nuts Logo" width={96} height={96} className="object-contain" />
+            </div>
             <span className="font-bold text-xl text-amber-900">Tây Nguyên Nuts</span>
           </Link>
 

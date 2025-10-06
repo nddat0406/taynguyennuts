@@ -28,8 +28,10 @@ const testimonials = [
 ]
 
 export function TestimonialsSection() {
+  const duplicatedTestimonials = [...testimonials, ...testimonials]
+
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-white overflow-hidden scroll-snap-section">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-5"
         style={{
@@ -52,31 +54,33 @@ export function TestimonialsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={index}
-              className="bg-amber-50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="flex items-center mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed italic">"{testimonial.content}"</p>
-              <div className="flex items-center">
-                <img
-                  src={testimonial.avatar || "/placeholder.svg"}
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover mr-4"
-                />
-                <div>
-                  <h4 className="font-bold text-amber-900">{testimonial.name}</h4>
-                  <p className="text-gray-600 text-sm">{testimonial.location}</p>
+        <div className="relative">
+          <div className="flex gap-8 animate-scroll-infinite hover:[animation-play-state:paused]">
+            {duplicatedTestimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                className="bg-amber-50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[400px] hover:scale-105"
+              >
+                <div className="flex items-center mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed italic">"{testimonial.content}"</p>
+                <div className="flex items-center">
+                  <img
+                    src={testimonial.avatar || "/placeholder.svg"}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover mr-4"
+                  />
+                  <div>
+                    <h4 className="font-bold text-amber-900">{testimonial.name}</h4>
+                    <p className="text-gray-600 text-sm">{testimonial.location}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

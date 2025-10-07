@@ -47,7 +47,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "REMOVE_FROM_CART": {
-      const newItems = state.items.filter((item) => item.product.id !== action.productId)
+      const newItems = state.items.filter((item) => String(item.product.id) !== String(action.productId))
       const { total, itemCount } = calculateCartTotals(newItems)
       return { items: newItems, total, itemCount }
     }
@@ -55,13 +55,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "UPDATE_QUANTITY": {
       if (action.quantity <= 0) {
         // Remove item if quantity is 0 or negative
-        const newItems = state.items.filter((item) => item.product.id !== action.productId)
+        const newItems = state.items.filter((item) => String(item.product.id) !== String(action.productId))
         const { total, itemCount } = calculateCartTotals(newItems)
         return { items: newItems, total, itemCount }
       }
 
       const newItems = state.items.map((item) =>
-        item.product.id === action.productId ? { ...item, quantity: action.quantity } : item,
+        String(item.product.id) === String(action.productId) ? { ...item, quantity: action.quantity } : item,
       )
       const { total, itemCount } = calculateCartTotals(newItems)
       return { items: newItems, total, itemCount }
@@ -117,11 +117,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const isInCart = (productId: string): boolean => {
-    return cart.items.some((item) => item.product.id === productId)
+    return cart.items.some((item) => String(item.product.id) === String(productId))
   }
 
   const getItemQuantity = (productId: string): number => {
-    const item = cart.items.find((item) => item.product.id === productId)
+    const item = cart.items.find((item) => String(item.product.id) === String(productId))
     return item ? item.quantity : 0
   }
 

@@ -7,6 +7,9 @@ import { Suspense } from "react"
 import { CartProvider } from "@/contexts/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { AuthProvider } from "@/contexts/auth-context"
 export const metadata: Metadata = {
   title: "Tây Nguyên Nuts - Premium Vietnamese Nuts & Agricultural Products",
   description:
@@ -43,12 +46,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <CartProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-          <Toaster />
-          <Analytics />
-        </CartProvider>
-
+        <AuthProvider>
+          <CartProvider>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            <Toaster />
+            <Analytics />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   )

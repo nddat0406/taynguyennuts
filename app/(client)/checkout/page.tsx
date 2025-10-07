@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,11 +17,10 @@ import { useCart } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/products";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/header";
-import { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { error } from "console";
 import AddressInput from "@/components/ui/address-input"
 import { ORDER_STATUSES } from "@/lib/constants";
+import { useAuth } from "@/contexts/auth-context";
 
 interface CustomerInfo {
   fullName: string
@@ -71,6 +70,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
   const supabase = createClient();
+  const { user } = useAuth()
 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     fullName: "",
@@ -84,6 +84,21 @@ export default function CheckoutPage() {
 
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+    if (user) {
+      setCustomerInfo({
+        fullName: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        city: user.city || "",
+        ward: user.ward || "",
+        notes: user.notes || "",
+      })
+    }
+  }, [user])
+
   if (cart.items.length === 0) {
     return (
       <>

@@ -7,8 +7,7 @@ import { Suspense } from "react"
 import { CartProvider } from "@/contexts/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
+import { ProfileCompletionBanner } from "@/components/auth/profile-completion-banner"
 import { AuthProvider } from "@/contexts/auth-context"
 export const metadata: Metadata = {
   title: "Tây Nguyên Nuts - Premium Vietnamese Nuts & Agricultural Products",

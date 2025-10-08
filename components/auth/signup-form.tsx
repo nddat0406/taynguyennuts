@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import { signup } from "@/app/(client)/(auth)/action/auth"
 
 export function SignupForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -56,14 +58,28 @@ export function SignupForm() {
       const result = await signup(formData.email, formData.password)
 
       if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Đăng ký thất bại",
+          description: result.error,
+        })
         setErrors({
           email: result.error,
         })
       } else {
+        toast({
+          title: "Đăng ký thành công!",
+          description: "Vui lòng kiểm tra email để xác nhận tài khoản.",
+        })
         // Redirect to verify email page
         router.push("/verify-email")
       }
     } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Đăng ký thất bại. Vui lòng thử lại.",
+      })
       setErrors({
         email: "Đăng ký thất bại. Vui lòng thử lại.",
       })

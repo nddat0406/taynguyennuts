@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single()
+        const { data: profile } = await supabase.from("profiles").select("fullname").eq("id", user.id).single()
 
-        if (!profile || !profile.full_name) {
+        if (!profile || !profile.fullname) {
           return NextResponse.redirect(`${origin}/complete-profile`)
         }
       }

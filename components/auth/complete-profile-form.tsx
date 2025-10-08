@@ -8,32 +8,38 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, User, Phone, MapPin } from "lucide-react"
-import { updateProfile } from "@/app/(client)/(auth)/action/auth"
-
+import { updateProfile,skipProfileCompletion } from "@/app/(client)/(auth)/action/auth"
+import { useToast } from "@/hooks/use-toast"
+import { Profile } from "@/types"
 export function CompleteProfileForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    full_name: "",
+  const { toast } = useToast()
+  const [isSkipping, setIsSkipping] = useState(false)
+
+  const [formData, setFormData] = useState<Profile>({
+    fullname: "",
     phone: "",
     address: "",
-    city: "",
+    province: "",
+    ward: "",
+    updated_at: null,
   })
   const [errors, setErrors] = useState<{
-    full_name?: string
+    fullname?: string
     phone?: string
   }>({})
 
   const validateForm = () => {
     const newErrors: {
-      full_name?: string
+      fullname?: string
       phone?: string
     } = {}
 
-    if (!formData.full_name) {
-      newErrors.full_name = "Tên là bắt buộc"
-    } else if (formData.full_name.length < 2) {
-      newErrors.full_name = "Tên phải có ít nhất 2 ký tự"
+    if (!formData.fullname) {
+      newErrors.fullname = "Tên là bắt buộc"
+    } else if (formData.fullname.length < 2) {
+      newErrors.fullname = "Tên phải có ít nhất 2 ký tự"
     }
 
     if (formData.phone && !/^[0-9]{10,11}$/.test(formData.phone)) {
@@ -52,26 +58,47 @@ export function CompleteProfileForm() {
     setIsLoading(true)
 
     try {
-      const result = await updateProfile({
-        full_name: formData.full_name,
-        phone: formData.phone || undefined,
-        address: formData.address || undefined,
-        city: formData.city || undefined,
-      })
+      const result = await updateProfile(formData)
 
       if (result?.error) {
-        setErrors({ full_name: result.error })
+        toast({
+          title: "Lỗi",
+          description: result.error,
+        })
         setIsLoading(false)
+      } else {
+        toast({
+          title: "Thành công",
+          description: "Hồ sơ của bạn đã được hoàn thiện!",
+        })
       }
       // Server action will redirect on success
     } catch (error: any) {
-      setErrors({ full_name: "Cập nhật thông tin thất bại. Vui lòng thử lại." })
+      toast({
+        title: "Lỗi",
+        description: "Cập nhật thông tin thất bại. Vui lòng thử lại.",
+      })
       setIsLoading(false)
     }
   }
 
-  const handleSkip = () => {
-    router.push("/")
+const handleSkip = async () => {
+    setIsSkipping(true)
+    try {
+      await skipProfileCompletion()
+      toast({
+        title: "Đã bỏ qua",
+        description: "Bạn có thể hoàn thiện hồ sơ sau trong trang cá nhân.",
+      })
+      // Server action will redirect
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Có lỗi xảy ra. Vui lòng thử lại.",
+      })
+      setIsSkipping(false)
+    }
   }
 
   return (
@@ -86,12 +113,12 @@ export function CompleteProfileForm() {
             id="full_name"
             type="text"
             placeholder="Nguyễn Văn A"
-            value={formData.full_name}
-            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-            className={`pl-10 ${errors.full_name ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
+            value={formData.fullname ?? ""}
+            onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
+            className={`pl-10 ${errors.fullname ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
           />
         </div>
-        {errors.full_name && <p className="text-sm text-red-500">{errors.full_name}</p>}
+        {errors.fullname && <p className="text-sm text-red-500">{errors.fullname}</p>}
       </div>
 
       <div className="space-y-2">
@@ -104,7 +131,7 @@ export function CompleteProfileForm() {
             id="phone"
             type="tel"
             placeholder="0123456789"
-            value={formData.phone}
+            value={formData.phone ?? ""}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             className={`pl-10 ${errors.phone ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
           />
@@ -122,7 +149,7 @@ export function CompleteProfileForm() {
             id="address"
             type="text"
             placeholder="123 Đường ABC"
-            value={formData.address}
+            value={formData.address ?? ""}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             className="pl-10 border-amber-200 focus:border-amber-500"
           />
@@ -139,8 +166,25 @@ export function CompleteProfileForm() {
             id="city"
             type="text"
             placeholder="Hồ Chí Minh"
-            value={formData.city}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            value={formData.province ?? ""}
+            onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+            className="pl-10 border-amber-200 focus:border-amber-500"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ward" className="text-amber-900">
+          Phường/Xã
+        </Label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            id="ward"
+            type="text"
+            placeholder="Phường 1"
+            value={formData.ward ?? ""}
+            onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
             className="pl-10 border-amber-200 focus:border-amber-500"
           />
         </div>

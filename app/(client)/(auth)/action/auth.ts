@@ -1,5 +1,6 @@
 "use server"
 
+import { Profile } from "@/types"
 import { createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -32,6 +33,15 @@ export async function login(email: string, password: string) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Check if email is verified
+  if (data.user && !data.user.email_confirmed_at) {
+    await supabase.auth.signOut()
+    return {
+      error: "Vui lòng xác nhận email của bạn trước khi đăng nhập. Kiểm tra hộp thư đến của bạn.",
+      needsVerification: true,
+    }
   }
 
   revalidatePath("/", "layout")
@@ -70,14 +80,7 @@ export async function signupWithGoogle() {
   }
 }
 
-export async function updateProfile(profileData: {
-  full_name?: string
-  phone?: string
-  address?: string
-  city?: string
-  ward?: string
-  notes?: string
-}) {
+export async function updateProfile(profileData: Profile) {
   const supabase = await createClient()
 
   const {
@@ -88,7 +91,7 @@ export async function updateProfile(profileData: {
     return { error: "Không tìm thấy người dùng" }
   }
 
-  const { error } = await supabase.from("profiles").upsert({
+  const { error } = await supabase.from("profiles").update({
     id: user.id,
     ...profileData,
     updated_at: new Date().toISOString(),
@@ -98,8 +101,57 @@ export async function updateProfile(profileData: {
     return { error: error.message }
   }
 
+  revalidatePath("/", "layout")
   revalidatePath("/profile")
-  return { success: true }
+  redirect("/")
+}
+
+export async function skipProfileCompletion() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "Không tìm thấy người dùng" }
+  }
+
+  // Create an empty profile entry to mark that user has been prompted
+  const { error } = await supabase.from("profiles").upsert({
+    id: user.id,
+    updated_at: new Date().toISOString(),
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/", "layout")
+  redirect("/")
+}
+
+export async function checkProfileComplete() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { isComplete: false, hasProfile: false }
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("fullname, phone").eq("id", user.id).single()
+
+  if (!profile) {
+    return { isComplete: false, hasProfile: false }
+  }
+
+  // Profile is complete if user has at least a name
+  const isComplete = !!profile.fullname
+
+  return { isComplete, hasProfile: true }
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {

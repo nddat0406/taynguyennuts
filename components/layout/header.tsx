@@ -24,7 +24,7 @@ export function Header() {
   const navigation = [
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
-    { name: "Tra cứu đơn hàng", href: "/track-order" },
+    { name: "Tra cứu đơn hàng", href: "/order-tracking" },
     { name: "Về chúng tôi", href: "/#story" },
     { name: "Liên hệ", href: "/#contact" },
   ]
@@ -43,15 +43,25 @@ export function Header() {
   }
 
   const getUserInitials = () => {
-    if (!user) return "U"
+    if (!user) {
+      console.debug("getUserInitials: no user")
+      return "U"
+    }
     if (user.profile?.fullname) {
+      console.debug("getUserInitials: fullname =", user.profile.fullname)
       const names = user.profile.fullname.split(" ")
       if (names.length >= 2) {
-        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+        const initials = `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+        console.debug("getUserInitials: initials =", initials)
+        return initials
       }
-      return user.profile.fullname[0].toUpperCase()
+      const initial = user.profile.fullname[0].toUpperCase()
+      console.debug("getUserInitials: single initial =", initial)
+      return initial
     }
-    return user.email?.[0].toUpperCase() || "U"
+    const emailInitial = user.email?.[0].toUpperCase() || "U"
+    console.debug("getUserInitials: email initial =", emailInitial)
+    return emailInitial
   }
 
   return (
@@ -60,8 +70,8 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-amber-800 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TN</span>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
+              <img src="/logo.jpg" alt="Tây Nguyên Nuts" className="w-5 h-5" />
             </div>
             <span className="font-bold text-xl text-amber-900">Tây Nguyên Nuts</span>
           </Link>

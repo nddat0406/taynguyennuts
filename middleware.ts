@@ -29,16 +29,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Check if user needs to complete profile
-  if (user && !request.nextUrl.pathname.startsWith("/complete-profile")) {
-    const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single()
-
-    if (!profile || !profile.full_name) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/complete-profile"
-      return NextResponse.redirect(url)
-    }
-  }
+  // Users can skip profile completion and will see a banner reminder instead
 
   // Redirect authenticated users away from auth pages
   if (user && (request.nextUrl.pathname === "/signup" || request.nextUrl.pathname === "/login")) {

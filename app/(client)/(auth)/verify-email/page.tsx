@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, CheckCircle, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/utils/supabase/client"
 
 export default function VerifyEmailPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { toast } = useToast()
   const [isResending, setIsResending] = useState(false)
+  const [isChecking, setIsChecking] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
   const [userEmail, setUserEmail] = useState<string>("")
 
@@ -40,23 +43,51 @@ export default function VerifyEmailPage() {
       if (error) throw error
 
       setResendSuccess(true)
+      toast({
+        title: "Email đã được gửi lại",
+        description: "Vui lòng kiểm tra hộp thư của bạn.",
+      })
       setTimeout(() => setResendSuccess(false), 3000)
     } catch (error) {
       console.error("[v0] Resend email error:", error)
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không thể gửi lại email. Vui lòng thử lại sau.",
+      })
     } finally {
       setIsResending(false)
     }
   }
 
   const handleVerifyAndContinue = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    setIsChecking(true)
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (user?.email_confirmed_at) {
-      router.push("/complete-profile")
-    } else {
-      alert("Vui lòng xác nhận email trước khi tiếp tục")
+      if (user?.email_confirmed_at) {
+        toast({
+          title: "Email đã được xác nhận!",
+          description: "Đang chuyển đến trang hoàn thiện hồ sơ...",
+        })
+        router.push("/complete-profile")
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Email chưa được xác nhận",
+          description: "Vui lòng kiểm tra email và nhấp vào liên kết xác nhận.",
+        })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không thể kiểm tra trạng thái xác nhận. Vui lòng thử lại.",
+      })
+    } finally {
+      setIsChecking(false)
     }
   }
 
@@ -92,8 +123,19 @@ export default function VerifyEmailPage() {
             )}
 
             <div className="space-y-3">
-              <Button onClick={handleVerifyAndContinue} className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-                Tôi đã xác nhận email
+              <Button
+                onClick={handleVerifyAndContinue}
+                disabled={isChecking}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {isChecking ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Đang kiểm tra...
+                  </>
+                ) : (
+                  "Tôi đã xác nhận email"
+                )}
               </Button>
 
               <Button

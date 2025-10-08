@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 import { login } from "@/app/(client)/(auth)/action/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -38,7 +41,7 @@ export function LoginForm() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) return
@@ -49,11 +52,29 @@ export function LoginForm() {
       const result = await login(formData.email, formData.password)
 
       if (result?.error) {
+        if (result.needsVerification) {
+          toast({
+            variant: "destructive",
+            title: "Xác nhận email bắt buộc",
+            description: result.error,
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Đăng nhập thất bại",
+            description: result.error,
+          })
+        }
         setErrors({ email: result.error })
         setIsLoading(false)
       }
       // Server action will redirect on success
     } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Đăng nhập thất bại. Vui lòng thử lại.",
+      })
       setErrors({ email: "Đăng nhập thất bại. Vui lòng thử lại." })
       setIsLoading(false)
     }

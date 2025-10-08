@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useCart } from "@/hooks/use-cart"
 import { CartItem } from "./cart-item"
 import { CartIcon } from "./cart-icon"
-import { formatPrice } from "@/lib/products"
+import { formatPrice } from "@/utils/products"
 import { useState } from "react"
 import Link from "next/link"
 

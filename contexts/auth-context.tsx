@@ -3,100 +3,98 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-
-interface User {
-  name: string
-  email: string
-  phone?: string
-  address?: string
-  city?: string
-  ward?: string
-  notes?: string
-}
+import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { createClient } from "@/utils/supabase/client"
+import { User } from "@/types"
 
 interface AuthContextType {
   user: User | null
+  supabaseUser: SupabaseUser | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
-  updateUser: (userData: Partial<User>) => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const supabase = createClient()
 
-  // Load user from localStorage on mount
+  const loadUserProfile = async (authUser: SupabaseUser) => {
+    setSupabaseUser(authUser)
+
+    // Fetch profile data from profiles table
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", authUser.id).single()
+
+    if (profile) {
+      setUser({
+        id: authUser.id,
+        email: authUser.email!,
+        profile: { ...profile },
+      })
+    } else {
+      // User exists but no profile yet
+      setUser({
+        id: authUser.id,
+        email: authUser.email!,
+      })
+    }
+  }
+
+  const refreshUser = async () => {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser()
+
+    if (authUser) {
+      await loadUserProfile(authUser)
+    }
+  }
+
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (error) {
-        console.error("[v0] Error parsing stored user:", error)
-        localStorage.removeItem("user")
+    const loadUser = async () => {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser()
+
+      if (authUser) {
+        await loadUserProfile(authUser)
       }
+      setIsLoading(false)
     }
-    setIsLoading(false)
-  }, [])
 
-  const login = async (email: string, password: string) => {
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const userData: User = {
-          email,
-          name: email.split("@")[0],
-        }
-        localStorage.setItem("user", JSON.stringify(userData))
-        setUser(userData)
-        resolve()
-      }, 1500)
+    loadUser()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[v0] Auth state changed:", event)
+
+      if (session?.user) {
+        await loadUserProfile(session.user)
+      } else {
+        setUser(null)
+        setSupabaseUser(null)
+      }
+
+      setIsLoading(false)
     })
-  }
 
-  const signup = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const userData: User = {
-          name,
-          email,
-        }
-        localStorage.setItem("user", JSON.stringify(userData))
-        setUser(userData)
-        resolve()
-      }, 1500)
-    })
-  }
-
-  const logout = () => {
-    localStorage.removeItem("user")
-    setUser(null)
-    router.push("/")
-  }
-
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData }
-      localStorage.setItem("user", JSON.stringify(updatedUser))
-      setUser(updatedUser)
+    return () => {
+      subscription.unsubscribe()
     }
-  }
+  }, [supabase])
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        supabaseUser,
         isLoading,
-        login,
-        signup,
-        logout,
-        updateUser,
+        refreshUser,
       }}
     >
       {children}

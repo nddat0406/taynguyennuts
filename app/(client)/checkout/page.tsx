@@ -14,12 +14,12 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, Truck, MapPin, User } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { formatPrice } from "@/lib/products";
+import { formatPrice } from "@/utils/products";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/header";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import AddressInput from "@/components/ui/address-input"
-import { ORDER_STATUSES } from "@/lib/constants";
+import { ORDER_STATUSES } from "@/utils/constants";
 import { useAuth } from "@/contexts/auth-context";
 
 interface CustomerInfo {

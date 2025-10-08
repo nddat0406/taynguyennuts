@@ -7,7 +7,7 @@ import { ValuesSection } from "@/components/sections/values-section"
 import { TestimonialsSection } from "@/components/sections/testimonials-section"
 import { CtaSection } from "@/components/sections/cta-section"
 import { Footer } from "@/components/layout/footer"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/utils/supabase/server"
 import type { Product } from "@/types"
 import { OrderSuccessToast } from "@/components/order-success-toast"
 

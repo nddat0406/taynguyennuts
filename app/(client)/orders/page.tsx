@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Package, MapPin, CreditCard, Truck, Clock, CheckCircle, XCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { formatPrice } from "@/lib/products"
+import { formatPrice } from "@/utils/products"
 import { Header } from "@/components/layout/header"
 import { useAuth } from "@/contexts/auth-context"
 

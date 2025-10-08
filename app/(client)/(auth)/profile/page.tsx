@@ -12,12 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Eye, EyeOff, Loader2, Lock, Mail, User, Save, LogOut, MapPin, Phone } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
+import { changePassword, logout, updateProfile } from "../action/auth"
 import AddressInput from "@/components/ui/address-input"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, logout, updateUser, isLoading: authLoading } = useAuth()
+  const { user, isLoading: authLoading, refreshUser } = useAuth()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -25,19 +28,18 @@ export default function ProfilePage() {
 
   // Profile form state
   const [profileData, setProfileData] = useState({
-    name: "",
-    email: "",
+    fullname: "",
     phone: "",
     address: "",
-    city: "",
+    province: "",
     ward: "",
-    notes: "",
   })
   const [profileErrors, setProfileErrors] = useState<{
-    name?: string
-    email?: string
+    fullname?: string
     phone?: string
     address?: string
+    province?: string
+    ward?: string
   }>({})
 
   // Password form state
@@ -60,30 +62,22 @@ export default function ProfilePage() {
 
     if (user) {
       setProfileData({
-        name: user.name,
-        email: user.email,
-        phone: user.phone || "",
-        address: user.address || "",
-        city: user.city || "",
-        ward: user.ward || "",
-        notes: user.notes || "",
+        fullname: user.profile?.fullname || "",
+        phone: user.profile?.phone || "",
+        address: user.profile?.address || "",
+        province: user.profile?.province || "",
+        ward: user.profile?.ward || "",
       })
     }
   }, [user, authLoading, router])
 
   const validateProfileForm = () => {
-    const newErrors: { name?: string; email?: string; phone?: string; address?: string } = {}
+    const newErrors: { fullname?: string; phone?: string; address?: string; province?: string; ward?: string } = {}
 
-    if (!profileData.name) {
-      newErrors.name = "Tên là bắt buộc"
-    } else if (profileData.name.length < 2) {
-      newErrors.name = "Tên phải có ít nhất 2 ký tự"
-    }
-
-    if (!profileData.email) {
-      newErrors.email = "Email là bắt buộc"
-    } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
-      newErrors.email = "Email không hợp lệ"
+    if (!profileData.fullname) {
+      newErrors.fullname = "Tên là bắt buộc"
+    } else if (profileData.fullname.length < 2) {
+      newErrors.fullname = "Tên phải có ít nhất 2 ký tự"
     }
 
     if (profileData.phone && !/^[0-9]{10,11}$/.test(profileData.phone)) {
@@ -128,12 +122,32 @@ export default function ProfilePage() {
 
     setIsLoading(true)
 
-    setTimeout(() => {
-      console.log("[v0] Profile update:", profileData)
-      updateUser(profileData)
+    try {
+      const result = await updateProfile(profileData)
+
+      if (result?.error) {
+        toast({
+          title: "Lỗi",
+          description: result.error,
+          variant: "destructive",
+        })
+      } else {
+        await refreshUser()
+        toast({
+          title: "Thành công",
+          description: "Cập nhật thông tin thành công!",
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Profile update error:", error)
+      toast({
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi cập nhật thông tin",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-      alert("Cập nhật thông tin thành công!")
-    }, 1500)
+    }
   }
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -143,20 +157,44 @@ export default function ProfilePage() {
 
     setIsLoading(true)
 
-    setTimeout(() => {
-      console.log("[v0] Password change:", { currentPassword: passwordData.currentPassword })
-      setIsLoading(false)
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+    try {
+      const result = await changePassword(passwordData.currentPassword, passwordData.newPassword)
+
+      if (result?.error) {
+        toast({
+          title: "Lỗi",
+          description: result.error,
+          variant: "destructive",
+        })
+      } else {
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+        toast({
+          title: "Thành công",
+          description: "Đổi mật khẩu thành công!",
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Password change error:", error)
+      toast({
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi đổi mật khẩu",
+        variant: "destructive",
       })
-      alert("Đổi mật khẩu thành công!")
-    }, 1500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error("[v0] Logout error:", error)
+    }
   }
 
   const handleLocationChange = (field: string, value: string) => {
@@ -165,6 +203,23 @@ export default function ProfilePage() {
     } else if (field === "ward") {
       setProfileData((prev) => ({ ...prev, ward: value }))
     }
+  }
+
+  const getUserDisplayName = () => {
+    if (!user) return ""
+    return user.profile?.fullname || user.email?.split("@")[0] || "User"
+  }
+
+  const getUserInitials = () => {
+    if (!user) return "U"
+    if (user.profile?.fullname) {
+      const names = user.profile.fullname.split(" ")
+      if (names.length >= 2) {
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+      }
+      return user.profile.fullname[0].toUpperCase()
+    }
+    return user.email?.[0].toUpperCase() || "U"
   }
 
   if (authLoading || !user) {
@@ -180,11 +235,11 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row items-center gap-6">
               <Avatar className="w-24 h-24 border-4 border-amber-200">
                 <AvatarFallback className="bg-amber-600 text-white text-3xl font-bold">
-                  {user.name.charAt(0).toUpperCase()}
+                  {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-bold text-amber-900">{user.name}</h1>
+                <h1 className="text-3xl font-bold text-amber-900">{getUserDisplayName()}</h1>
                 <p className="text-gray-600 mt-1">{user.email}</p>
               </div>
               <Button
@@ -241,12 +296,12 @@ export default function ProfilePage() {
                         id="profile-name"
                         type="text"
                         placeholder="Nguyễn Văn A"
-                        value={profileData.name}
-                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                        className={`pl-10 ${profileErrors.name ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
+                        value={profileData.fullname}
+                        onChange={(e) => setProfileData({ ...profileData, fullname: e.target.value })}
+                        className={`pl-10 ${profileErrors.fullname ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
                       />
                     </div>
-                    {profileErrors.name && <p className="text-sm text-red-500">{profileErrors.name}</p>}
+                    {profileErrors.fullname && <p className="text-sm text-red-500">{profileErrors.fullname}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -258,13 +313,12 @@ export default function ProfilePage() {
                       <Input
                         id="profile-email"
                         type="email"
-                        placeholder="example@email.com"
-                        value={profileData.email}
-                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                        className={`pl-10 ${profileErrors.email ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
+                        value={user.email}
+                        disabled
+                        className="pl-10 border-amber-200 bg-gray-50 cursor-not-allowed"
                       />
                     </div>
-                    {profileErrors.email && <p className="text-sm text-red-500">{profileErrors.email}</p>}
+                    <p className="text-xs text-gray-500">Email không thể thay đổi</p>
                   </div>
 
                   <div className="space-y-2">
@@ -336,22 +390,10 @@ export default function ProfilePage() {
 
                   <AddressInput
                     onLocationChange={handleLocationChange}
-                    location={{ province: profileData.city, ward: profileData.ward }}
+                    location={{ province: profileData.province, ward: profileData.ward }}
                   />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-notes" className="text-amber-900">
-                      Ghi chú giao hàng
-                    </Label>
-                    <Textarea
-                      id="delivery-notes"
-                      placeholder="Ghi chú thêm về địa chỉ giao hàng (tùy chọn)"
-                      value={profileData.notes}
-                      onChange={(e) => setProfileData({ ...profileData, notes: e.target.value })}
-                      rows={3}
-                      className="border-amber-200 focus:border-amber-500"
-                    />
-                  </div>
+                  
 
                   <Button
                     type="submit"

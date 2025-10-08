@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ShoppingCart, Heart, Share2, Minus, Plus } from "lucide-react"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
-import { formatPrice } from "@/lib/products"
+import { formatPrice } from "@/utils/products"
 import type { Product } from "@/types"
 
 interface ProductClientActionsProps {

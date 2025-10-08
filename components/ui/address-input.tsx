@@ -6,7 +6,7 @@ import { MapPin, Check, ChevronsUpDown } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 import useSWR from "swr"
 
 interface Province {

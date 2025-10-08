@@ -14,6 +14,21 @@ export interface Product {
   weight: string
   category?: Category
 }
+
+export interface User {
+  id: string,
+  email: string,
+  profile?: Profile
+}
+export interface Profile {
+  address: string | null
+  fullname: string | null
+  province: string | null
+  updated_at: string | null
+  ward: string | null
+  phone: string | null
+
+}
 export interface Category {
   id: number
   name: string

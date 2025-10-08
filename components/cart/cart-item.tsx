@@ -3,7 +3,7 @@
 import { Minus, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/use-cart"
-import { formatPrice } from "@/lib/products"
+import { formatPrice } from "@/utils/products"
 import type { CartItem as CartItemType } from "@/types"
 
 interface CartItemProps {

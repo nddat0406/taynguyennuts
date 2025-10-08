@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CartDrawer } from "@/components/cart/cart-drawer"
 import { Menu, X, User, LogOut, UserCircle, Package } from "lucide-react"
@@ -16,18 +15,44 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
+import { logout } from "@/app/(client)/(auth)/action/auth"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout } = useAuth()
+  const { user, isLoading } = useAuth()
 
   const navigation = [
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
-    { name: "Tra cứu đơn hàng", href: "/order-tracking" },
+    { name: "Tra cứu đơn hàng", href: "/track-order" },
     { name: "Về chúng tôi", href: "/#story" },
     { name: "Liên hệ", href: "/#contact" },
   ]
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error("[v0] Logout error:", error)
+    }
+  }
+
+  const getUserDisplayName = () => {
+    if (!user) return ""
+    return user.profile?.fullname || user.email?.split("@")[0] || "User"
+  }
+
+  const getUserInitials = () => {
+    if (!user) return "U"
+    if (user.profile?.fullname) {
+      const names = user.profile.fullname.split(" ")
+      if (names.length >= 2) {
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase()
+      }
+      return user.profile.fullname[0].toUpperCase()
+    }
+    return user.email?.[0].toUpperCase() || "U"
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-amber-100">
@@ -36,7 +61,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-amber-800 rounded-full flex items-center justify-center">
-              <Image src="/logo.jpg" alt="Tây Nguyên Nuts Logo" width={98} height={98} className="object-contain" />
+              <span className="text-white font-bold text-sm">TN</span>
             </div>
             <span className="font-bold text-xl text-amber-900">Tây Nguyên Nuts</span>
           </Link>
@@ -59,20 +84,25 @@ export function Header() {
 
             {/* Auth UI - Desktop */}
             <div className="hidden md:flex items-center gap-2">
-              {user ? (
+              {!isLoading && user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2 hover:bg-amber-50">
                       <Avatar className="w-8 h-8 border-2 border-amber-200">
                         <AvatarFallback className="bg-amber-600 text-white text-sm font-bold">
-                          {user.name.charAt(0).toUpperCase()}
+                          {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-amber-900">{user.name}</span>
+                      <span className="text-sm font-medium text-amber-900">{getUserDisplayName()}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="text-amber-900">Tài khoản của tôi</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-amber-900">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{getUserDisplayName()}</p>
+                        <p className="text-xs text-gray-500 font-normal">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer">
@@ -87,13 +117,13 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
                       <LogOut className="w-4 h-4 mr-2" />
                       Đăng xuất
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
+              ) : !isLoading ? (
                 <>
                   <Button variant="ghost" asChild className="text-amber-900 hover:bg-amber-50">
                     <Link href="/login">Đăng nhập</Link>
@@ -102,7 +132,7 @@ export function Header() {
                     <Link href="/signup">Đăng ký</Link>
                   </Button>
                 </>
-              )}
+              ) : null}
             </div>
 
             {/* Mobile Menu Button */}
@@ -128,16 +158,16 @@ export function Header() {
               ))}
 
               <div className="pt-4 border-t border-amber-100 space-y-2">
-                {user ? (
+                {!isLoading && user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-2 bg-amber-50 rounded-md">
                       <Avatar className="w-10 h-10 border-2 border-amber-200">
                         <AvatarFallback className="bg-amber-600 text-white font-bold">
-                          {user.name.charAt(0).toUpperCase()}
+                          {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-amber-900">{user.name}</p>
+                        <p className="font-medium text-amber-900">{getUserDisplayName()}</p>
                         <p className="text-sm text-gray-600">{user.email}</p>
                       </div>
                     </div>
@@ -154,9 +184,20 @@ export function Header() {
                     </Button>
                     <Button
                       variant="outline"
+                      asChild
+                      className="w-full justify-start border-amber-200 text-amber-900 hover:bg-amber-50 bg-transparent"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link href="/orders">
+                        <Package className="w-4 h-4 mr-2" />
+                        Lịch sử đơn hàng
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
                       className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
                       onClick={() => {
-                        logout()
+                        handleLogout()
                         setIsMenuOpen(false)
                       }}
                     >
@@ -164,7 +205,7 @@ export function Header() {
                       Đăng xuất
                     </Button>
                   </>
-                ) : (
+                ) : !isLoading ? (
                   <>
                     <Button
                       variant="outline"
@@ -185,7 +226,7 @@ export function Header() {
                       <Link href="/signup">Đăng ký</Link>
                     </Button>
                   </>
-                )}
+                ) : null}
               </div>
             </nav>
           </div>

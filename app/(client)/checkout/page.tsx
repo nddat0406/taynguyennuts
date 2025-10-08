@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic'
+
 import type React from "react";
 
 import { useEffect, useState } from "react";
@@ -159,6 +161,7 @@ const handleSubmitOrder = async () => {
   const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
 
   try {
+    const supabase = createClient();
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert([

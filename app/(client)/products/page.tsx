@@ -25,7 +25,6 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true)
       const { data: categoryData } = await supabase.from("category").select("id, name")
       setCategories([{ id: 0, name: "Tất cả sản phẩm" }, ...(categoryData ?? [])])
 
@@ -62,7 +61,7 @@ export default function ProductsPage() {
       setIsLoading(false)
     }
     fetchData()
-  }, [supabase])
+  }, [])
 
   const filteredProducts =
     selectedCategory === "0" ? products : products.filter((product) => product.category?.id === parseInt(selectedCategory))

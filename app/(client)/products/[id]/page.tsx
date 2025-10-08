@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound } from "next/navigation"
 import { formatPrice } from "@/utils/products"
 import { Badge } from "@/components/ui/badge"
@@ -10,12 +12,13 @@ import { ProductClientActions } from "@/components/product-client-actions"
 import Head from "next/head"
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: product, error } = await supabase
@@ -32,7 +35,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         isMainImage
       )
     `)
-    .eq("id", params.id)
+    .eq("id", id)
     .single()
 
   if (error || !product) {
@@ -135,9 +138,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
+  const { id } = await params
   const supabase = await createClient()
 
-  const { data: product } = await supabase.from("products").select("id, name, description").eq("id", params.id).single()
+  const { data: product } = await supabase.from("products").select("id, name, description").eq("id", id).single()
 
   if (!product) {
     return {

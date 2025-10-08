@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -18,10 +20,10 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const supabase = createClient()
 
   useEffect(() => {
     const fetchData = async () => {
+      const supabase = createClient()
       const { data: categoryData } = await supabase.from("category").select("id, name")
       setCategories([{ id: "all", name: "Tất cả sản phẩm" }, ...(categoryData ?? [])])
 
@@ -55,7 +57,7 @@ export default function ProductsPage() {
       setProducts(formattedProducts)
     }
     fetchData()
-  }, [supabase])
+  }, [])
 
   const filteredProducts =
     selectedCategory === "all" ? products : products.filter((product) => product.category?.id === parseInt(selectedCategory))

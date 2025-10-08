@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic'
+
 import type React from "react";
 
 import { useState } from "react";
@@ -70,7 +72,6 @@ export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
-  const supabase = createClient();
 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     fullName: "",
@@ -144,6 +145,7 @@ const handleSubmitOrder = async () => {
   const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
 
   try {
+    const supabase = createClient();
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert([

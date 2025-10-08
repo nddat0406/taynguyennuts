@@ -19,7 +19,8 @@ import { logout } from "@/app/(client)/(auth)/action/auth"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, isLoading } = useAuth()
+  const { user, isLoading } = useAuth()  
+
 
   const navigation = [
     { name: "Trang chủ", href: "/" },
@@ -31,7 +32,7 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
-      await logout()
+      logout()
     } catch (error) {
       console.error("[v0] Logout error:", error)
     }

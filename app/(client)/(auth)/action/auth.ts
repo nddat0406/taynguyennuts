@@ -12,7 +12,7 @@ export async function signup(email: string, password: string) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/callback`,
     },
   })
 
@@ -45,7 +45,7 @@ export async function login(email: string, password: string) {
   }
 
   revalidatePath("/", "layout")
-  redirect("/")
+  return { success: true }
 }
 
 export async function logout() {
@@ -67,7 +67,7 @@ export async function signupWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/callback`,
     },
   })
 

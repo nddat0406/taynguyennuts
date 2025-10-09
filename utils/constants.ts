@@ -70,8 +70,6 @@ export const COMPANY_VALUES: CompanyValue[] = [
     icon: "💬",
   },
 ]
-
-
 export const ORDER_STATUSES = {
   PENDING_CONFIRMATION: "Chờ xác nhận",
   PENDING_PICKUP: "Chờ lấy hàng",
@@ -82,5 +80,3 @@ export const ORDER_STATUSES = {
 export type OrderStatus = typeof ORDER_STATUSES[keyof typeof ORDER_STATUSES]
 
 export const ORDER_STATUS_OPTIONS: OrderStatus[] = Object.values(ORDER_STATUSES)
-
-

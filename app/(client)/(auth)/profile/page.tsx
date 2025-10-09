@@ -57,11 +57,7 @@ export default function ProfilePage() {
   }>({})
 
   useEffect(() => {
-    console.log("Auth Loading:", authLoading)
-
     if (authLoading) return
-    // Only redirect if we've finished loading and user is definitively null
-    console.log("User:", user)
     if (!user && !authLoading) {
       router.push("/login")
     }

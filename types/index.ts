@@ -5,14 +5,22 @@ export interface ProductImages {
 }
 
 export interface Product {
-  id: number 
+  benefits: string | null
+  category: Category
+  created_at?: string
+  description?: string | null
+  expiration: string | null
+  id: number
+  ingredients: string | null
+  inStock: number
+  manufactured_at: string | null
   name: string
-  description: string
-  price: number
-  product_images: ProductImages[]
-  inStock: boolean
-  weight: string
-  category?: Category
+  packaged_at: string | null
+  price: string | null
+  storage_instructions: string | null
+  usage_instructions: string | null
+  weight: number
+  product_images: ProductImages[] | null
 }
 
 export interface User {

@@ -1,17 +1,20 @@
 "use client"
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ShoppingCart, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { formatPrice } from "@/utils/products"
+import { formatPrice } from "@/utils/utils"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
-import type { Product, Category } from "@/types"
 import { createClient } from "@/utils/supabase/client"
 import { ProductsGridSkeleton } from "@/components/product-card-skeleton"
 import { LoadingSpinner } from "@/components/loading-screen"
+
+// Import the provided interfaces
+import { Product, Category } from "@/types"
 
 export default function ProductsPage() {
   const { addToCart } = useCart()
@@ -25,10 +28,20 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: categoryData } = await supabase.from("category").select("id, name")
+      // Fetch categories
+      const { data: categoryData, error: categoryError } = await supabase
+        .from("category")
+        .select("id, name")
+      
+      if (categoryError) {
+        console.error("Error fetching categories:", categoryError)
+        return
+      }
+
       setCategories([{ id: 0, name: "Tất cả sản phẩm" }, ...(categoryData ?? [])])
 
-      const { data: productData } = await supabase
+      // Fetch products with necessary fields
+      const { data: productData, error: productError } = await supabase
         .from("products")
         .select(`
           id,
@@ -37,34 +50,65 @@ export default function ProductsPage() {
           price,
           inStock,
           weight,
+          benefits,
+          expiration,
+          ingredients,
+          manufactured_at,
+          packaged_at,
+          storage_instructions,
+          usage_instructions,
           product_images (
             url,
             isMainImage
           ),
-          category_id
+          category:category_id (id, name)
         `)
-        .neq('inStock', 0)
-      const { data: categoryMap } = await supabase
-        .from('category')
-        .select('*')
-      const categoryLookup = (categoryMap ?? []).reduce<Record<string, string>>(
-        (acc, cat) => ({ ...acc, [cat.id]: cat.name }),
-        {}
-      )
-      const formattedProducts = (productData ?? []).map(product => ({
-        ...product,
-        category: product.category_id != null
-          ? { id: product.category_id, name: categoryLookup[product.category_id] }
-          : undefined
+        .neq("inStock", 0)
+
+      if (productError) {
+        console.error("Error fetching products:", productError)
+        return
+      }
+
+      // Map the data to match the Product interface
+      const formattedProducts: Product[] = (productData ?? []).map((product) => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        inStock: product.inStock,
+        weight: product.weight,
+        benefits: product.benefits,
+        expiration: product.expiration,
+        ingredients: product.ingredients,
+        manufactured_at: product.manufactured_at,
+        packaged_at: product.packaged_at,
+        storage_instructions: product.storage_instructions,
+        usage_instructions: product.usage_instructions,
+        created_at: "", // Placeholder, as it's not fetched
+        product_images: product.product_images
+          ? product.product_images.map((img: { url: string | null; isMainImage: boolean | null }) => ({
+              url: img.url ?? "",
+              isMainImage: img.isMainImage ?? false,
+              alt: `${product.name} image`, // Optional: Add default alt text
+            }))
+          : null,
+        category: product.category
+          ? { id: product.category.id, name: product.category.name }
+          : { id: 0, name: "Unknown" }, // Fallback for missing category
       }))
+
       setProducts(formattedProducts)
       setIsLoading(false)
     }
+
     fetchData()
   }, [])
 
   const filteredProducts =
-    selectedCategory === "0" ? products : products.filter((product) => product.category?.id === parseInt(selectedCategory))
+    selectedCategory === "0"
+      ? products
+      : products.filter((product) => product.category?.id === parseInt(selectedCategory))
 
   const handleCategoryChange = async (categoryId: string) => {
     setIsCategoryLoading(true)
@@ -78,7 +122,7 @@ export default function ProductsPage() {
     e.preventDefault()
     e.stopPropagation()
 
-    if (!product.inStock) return
+    if (product.inStock === 0) return
 
     addToCart(product, 1)
     toast({
@@ -156,20 +200,28 @@ export default function ProductsPage() {
                     <Link href={`/products/${product.id}`}>
                       <div className="aspect-square overflow-hidden bg-amber-50">
                         <img
-                          src={product.product_images.find(img => img.isMainImage)?.url || "/placeholder.svg"}
-                          alt={product.product_images.find(img => img.isMainImage)?.alt || product.name}
+                          src={
+                            product.product_images?.find((img) => img.isMainImage)?.url || "/placeholder.svg"
+                          }
+                          alt={
+                            product.product_images?.find((img) => img.isMainImage)?.alt || product.name
+                          }
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                       <CardContent className="p-6">
                         <h3 className="text-2xl font-bold text-amber-900 mb-3">{product.name}</h3>
-                        <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">{product.description}</p>
+                        <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
+                          {product.description || "Không có mô tả"}
+                        </p>
                         <div className="flex items-center justify-between mb-4">
                           <div className="text-2xl font-bold text-orange-600">
-                            {formatPrice(product.price)}
-                            <span className="text-sm text-gray-500 font-normal">/{product.weight}</span>
+                            {product.price ? formatPrice(Number(product.price)) : "Liên hệ"}
+                            <span className="text-sm text-gray-500 font-normal">/{product.weight}g</span>
                           </div>
-                          {!product.inStock && <span className="text-sm text-red-600 font-medium">Hết hàng</span>}
+                          {product.inStock === 0 && (
+                            <span className="text-sm text-red-600 font-medium">Hết hàng</span>
+                          )}
                         </div>
                         <div className="flex gap-2">
                           <Button
@@ -185,7 +237,7 @@ export default function ProductsPage() {
                           </Button>
                           <Button
                             className="bg-amber-800 hover:bg-amber-900 text-white px-4"
-                            disabled={!product.inStock}
+                            disabled={product.inStock === 0}
                             onClick={(e) => handleQuickAddToCart(e, product)}
                           >
                             <ShoppingCart className="w-4 h-4" />

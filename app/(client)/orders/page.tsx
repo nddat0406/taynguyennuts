@@ -8,9 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Package, MapPin, CreditCard, Truck, Clock, CheckCircle, XCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { formatPrice } from "@/utils/products"
-import { Header } from "@/components/layout/header"
 import { useAuth } from "@/contexts/auth-context"
+import { formatPrice } from "@/utils/utils"
 
 interface OrderItem {
   product: {
@@ -217,7 +216,7 @@ export default function OrdersPage() {
                             </div>
                             <div className="text-right">
                               <p className="font-semibold text-amber-700">
-                                {formatPrice(item.product.price * item.quantity)}
+                                {formatPrice((Number(item.product.price) ?? 9999999999999999) * item.quantity)}
                               </p>
                             </div>
                           </div>
@@ -228,7 +227,7 @@ export default function OrdersPage() {
 
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold text-gray-900">Tổng cộng:</span>
-                        <span className="text-2xl font-bold text-amber-700">{formatPrice(order.total)}</span>
+                        <span className="text-2xl font-bold text-amber-700">{formatPrice((Number(order.total) ?? 9999999999999999))}</span>
                       </div>
 
                       {order.customerInfo.notes && (

@@ -107,6 +107,7 @@ export type Database = {
           phone: string
           province: string
           total: number | null
+          user_id: string | null
           ward: string
         }
         Insert: {
@@ -122,6 +123,7 @@ export type Database = {
           phone: string
           province: string
           total?: number | null
+          user_id?: string | null
           ward: string
         }
         Update: {
@@ -137,6 +139,7 @@ export type Database = {
           phone?: string
           province?: string
           total?: number | null
+          user_id?: string | null
           ward?: string
         }
         Relationships: []
@@ -175,33 +178,54 @@ export type Database = {
       }
       products: {
         Row: {
+          benefits: string | null
           category_id: number | null
           created_at: string
           description: string | null
+          expiration: string | null
           id: number
+          ingredients: string | null
           inStock: number
+          manufactured_at: string | null
           name: string
+          packaged_at: string | null
           price: string | null
+          storage_instructions: string | null
+          usage_instructions: string | null
           weight: number
         }
         Insert: {
+          benefits?: string | null
           category_id?: number | null
           created_at?: string
           description?: string | null
+          expiration?: string | null
           id?: number
+          ingredients?: string | null
           inStock?: number
+          manufactured_at?: string | null
           name: string
+          packaged_at?: string | null
           price?: string | null
+          storage_instructions?: string | null
+          usage_instructions?: string | null
           weight?: number
         }
         Update: {
+          benefits?: string | null
           category_id?: number | null
           created_at?: string
           description?: string | null
+          expiration?: string | null
           id?: number
+          ingredients?: string | null
           inStock?: number
+          manufactured_at?: string | null
           name?: string
+          packaged_at?: string | null
           price?: string | null
+          storage_instructions?: string | null
+          usage_instructions?: string | null
           weight?: number
         }
         Relationships: [

@@ -3,7 +3,7 @@
 import { Minus, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/use-cart"
-import { formatPrice } from "@/utils/products"
+import { formatPrice } from "@/utils/utils"
 import type { CartItem as CartItemType } from "@/types"
 
 interface CartItemProps {
@@ -26,14 +26,14 @@ export function CartItem({ item }: CartItemProps) {
     <div className="flex items-center gap-4 py-4 border-b border-gray-100 last:border-b-0">
       {/* Product Image */}
       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-        <img src={product.image || "/placeholder.svg"} alt={product.name} className="w-full h-full object-cover" />
+        <img src={product.product_images?.[0]?.url || "/placeholder.svg"} alt={product.name} className="w-full h-full object-cover" />
       </div>
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold text-gray-900 truncate">{product.name}</h4>
         <p className="text-sm text-gray-500">{product.weight}</p>
-        <p className="text-lg font-bold text-orange-600 mt-1">{formatPrice(product.price)}</p>
+        <p className="text-lg font-bold text-orange-600 mt-1">{formatPrice(Number(product.price ?? 9999999999999999))}</p>
       </div>
 
       {/* Quantity Controls */}

@@ -16,13 +16,13 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, Truck, MapPin, User } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { formatPrice } from "@/utils/products";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/layout/header";
 import { createClient } from "@/utils/supabase/client";
 import AddressInput from "@/components/ui/address-input"
 import { ORDER_STATUSES } from "@/utils/constants";
 import { useAuth } from "@/contexts/auth-context";
+import { formatPrice } from "@/utils/utils";
 
 interface CustomerInfo {
   fullName: string
@@ -380,7 +380,7 @@ const handleSubmitOrder = async () => {
                     >
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img
-                          src={item.product.product_images[0]?.url || "/placeholder.svg"}
+                          src={item.product.product_images?.[0]?.url || "/placeholder.svg"}
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                         />
@@ -395,7 +395,7 @@ const handleSubmitOrder = async () => {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-orange-600">
-                          {formatPrice(item.product.price * item.quantity)}
+                          {formatPrice((Number(item.product.price) ?? 9999999999999999) * item.quantity)}
                         </p>
                       </div>
                     </div>

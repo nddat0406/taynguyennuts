@@ -6,9 +6,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useCart } from "@/hooks/use-cart"
 import { CartItem } from "./cart-item"
 import { CartIcon } from "./cart-icon"
-import { formatPrice } from "@/utils/products"
 import { useState } from "react"
 import Link from "next/link"
+import { formatPrice } from "@/utils/utils"
 
 export function CartDrawer() {
   const { cart, clearCart } = useCart()

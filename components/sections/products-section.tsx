@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ShoppingCart } from "lucide-react"
 import Link from "next/link"
-import { formatPrice } from "@/utils/products"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 import type { Product } from "@/types"
+import { formatPrice } from "@/utils/utils"
 
 interface ProductsSectionProps {
   products: Product[]
@@ -69,7 +69,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                   <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">{product.description}</p>
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-2xl font-bold text-orange-600">
-                      {formatPrice(product.price)}
+                      {formatPrice(Number(product.price ?? 9999999999999999))}
                     </div>
                   </div>
                   <div className="flex gap-2">

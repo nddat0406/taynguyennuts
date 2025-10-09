@@ -16,10 +16,12 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
 import { logout } from "@/app/(client)/(auth)/action/auth"
+import { useRouter } from "next/navigation"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, isLoading } = useAuth()  
+  const { user, isLoading ,refreshUser} = useAuth()  
+  const router = useRouter()
 
 
   const navigation = [
@@ -31,12 +33,19 @@ export function Header() {
   ]
 
   const handleLogout = async () => {
-    try {
-      logout()
-    } catch (error) {
-      console.error("[v0] Logout error:", error)
+  try {
+    const result = await logout()
+    if (result?.error) {
+      console.error(result.error)
+      return
     }
+    await refreshUser()   // 👈 directly refresh AuthContext
+    router.push("/")       // 👈 then redirect manually
+  } catch (error) {
+    console.error("[v0] Logout error:", error)
   }
+}
+
 
   const getUserDisplayName = () => {
     if (!user) return ""

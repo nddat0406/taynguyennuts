@@ -44,7 +44,7 @@ export async function login(email: string, password: string) {
     }
   }
 
-  revalidatePath("/", "layout")
+  // revalidatePath("/", "layout")
   return { success: true }
 }
 
@@ -57,8 +57,9 @@ export async function logout() {
     return { error: error.message }
   }
 
-  revalidatePath("/", "layout")
-  redirect("/")
+  // revalidatePath("/", "layout")
+  // redirect("/")
+  return { success: true }
 }
 
 export async function signupWithGoogle() {

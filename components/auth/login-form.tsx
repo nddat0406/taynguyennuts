@@ -11,12 +11,14 @@ import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react"
 import { login } from "@/app/(client)/(auth)/action/auth"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const {refreshUser} = useAuth()  
 
   const [formData, setFormData] = useState({
     email: "",
@@ -72,8 +74,9 @@ export function LoginForm() {
           title: "Đăng nhập thành công!",
           description: "Chào mừng bạn trở lại.",
         })
-        router.push("/")
-        router.refresh();
+        refreshUser()
+        router.back()
+        
       }
     } catch (error) {
       toast({

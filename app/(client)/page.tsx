@@ -20,8 +20,7 @@ export default async function HomePage() {
     *,
     product_images (
       url,
-      isMainImage,
-      alt
+      isMainImage
     )
   `);
 

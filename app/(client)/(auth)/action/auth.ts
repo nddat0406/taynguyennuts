@@ -91,20 +91,21 @@ export async function updateProfile(profileData: Profile) {
   if (!user) {
     return { error: "Không tìm thấy người dùng" }
   }
-
+  // Upsert profile data
+  console.log(profileData)
   const { error } = await supabase.from("profiles").update({
-    id: user.id,
     ...profileData,
     updated_at: new Date().toISOString(),
-  })
+  }).eq("id", user.id)
 
   if (error) {
     return { error: error.message }
   }
 
-  revalidatePath("/", "layout")
-  revalidatePath("/profile")
-  redirect("/")
+  return { success: true }
+  // revalidatePath("/", "layout")
+  // revalidatePath("/profile")
+  // redirect("/")
 }
 
 export async function skipProfileCompletion() {
@@ -150,7 +151,7 @@ export async function checkProfileComplete() {
   }
 
   // Profile is complete if user has at least a name
-  const isComplete = !!profile.fullname
+  const isComplete = !!profile.fullname && !!profile.phone
 
   return { isComplete, hasProfile: true }
 }

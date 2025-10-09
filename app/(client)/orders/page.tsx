@@ -70,7 +70,7 @@ const statusConfig = {
 
 export default function OrdersPage() {
   const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, authLoading } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
 

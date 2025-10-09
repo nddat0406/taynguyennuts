@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, isLoading ,refreshUser} = useAuth()  
+  const { user, authLoading, refreshUser } = useAuth()
   const router = useRouter()
 
 
@@ -39,8 +39,9 @@ export function Header() {
       console.error(result.error)
       return
     }
-    await refreshUser()   // 👈 directly refresh AuthContext
-    router.push("/")       // 👈 then redirect manually
+    await refreshUser()   //  directly refresh AuthContext
+    localStorage.removeItem("profile-banner-dismissed") // Clear profile-banner-dismissed from localStorage
+    router.push("/")       //  then redirect manually
   } catch (error) {
     console.error("[v0] Logout error:", error)
   }
@@ -104,7 +105,7 @@ export function Header() {
 
             {/* Auth UI - Desktop */}
             <div className="hidden md:flex items-center gap-2">
-              {!isLoading && user ? (
+              {!authLoading && user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2 hover:bg-amber-50">
@@ -143,7 +144,7 @@ export function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : !isLoading ? (
+              ) : !authLoading ? (
                 <>
                   <Button variant="ghost" asChild className="text-amber-900 hover:bg-amber-50">
                     <Link href="/login">Đăng nhập</Link>
@@ -178,7 +179,7 @@ export function Header() {
               ))}
 
               <div className="pt-4 border-t border-amber-100 space-y-2">
-                {!isLoading && user ? (
+                {!authLoading && user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-2 bg-amber-50 rounded-md">
                       <Avatar className="w-10 h-10 border-2 border-amber-200">
@@ -225,7 +226,7 @@ export function Header() {
                       Đăng xuất
                     </Button>
                   </>
-                ) : !isLoading ? (
+                ) : !authLoading ? (
                   <>
                     <Button
                       variant="outline"

@@ -1,44 +1,33 @@
 import { createServerClient } from "@supabase/ssr"
-import { NextResponse, type NextRequest } from "next/server"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
+  const response = NextResponse.next()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // 👈 make sure this is the anon key
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
           })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
         },
       },
-    },
+    }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Users can skip profile completion and will see a banner reminder instead
-
-  // Redirect authenticated users away from auth pages
-  if (user && (request.nextUrl.pathname === "/signup" || request.nextUrl.pathname === "/login")) {
+  if (user && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/signup")) {
     const url = request.nextUrl.clone()
     url.pathname = "/"
     return NextResponse.redirect(url)
   }
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {

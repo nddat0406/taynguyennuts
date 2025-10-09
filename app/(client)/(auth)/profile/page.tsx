@@ -16,10 +16,11 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import { changePassword, logout, updateProfile } from "../action/auth"
 import AddressInput from "@/components/ui/address-input"
+import { Profile } from "@/types"
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, isLoading: authLoading, refreshUser } = useAuth()
+  const { user, authLoading, refreshUser } = useAuth()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -27,12 +28,13 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   // Profile form state
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<Profile>({
     fullname: "",
     phone: "",
     address: "",
     province: "",
     ward: "",
+    updated_at: null,
   })
   const [profileErrors, setProfileErrors] = useState<{
     fullname?: string
@@ -55,10 +57,15 @@ export default function ProfilePage() {
   }>({})
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    console.log("Auth Loading:", authLoading)
+
+    if (authLoading) return
+    // Only redirect if we've finished loading and user is definitively null
+    console.log("User:", user)
+    if (!user && !authLoading) {
       router.push("/login")
-      return
     }
+
 
     if (user) {
       setProfileData({
@@ -67,6 +74,7 @@ export default function ProfilePage() {
         address: user.profile?.address || "",
         province: user.profile?.province || "",
         ward: user.profile?.ward || "",
+        updated_at: user.profile?.updated_at || null,
       })
     }
   }, [user, authLoading, router])
@@ -129,9 +137,8 @@ export default function ProfilePage() {
         toast({
           title: "Lỗi",
           description: result.error,
-          variant: "destructive",
         })
-      } else {
+      } else if (result?.success) {
         await refreshUser()
         toast({
           title: "Thành công",
@@ -143,7 +150,6 @@ export default function ProfilePage() {
       toast({
         title: "Lỗi",
         description: "Có lỗi xảy ra khi cập nhật thông tin",
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)
@@ -199,7 +205,7 @@ export default function ProfilePage() {
 
   const handleLocationChange = (field: string, value: string) => {
     if (field === "province") {
-      setProfileData((prev) => ({ ...prev, city: value, ward: "" }))
+      setProfileData((prev) => ({ ...prev, province: value, ward: "" }))
     } else if (field === "ward") {
       setProfileData((prev) => ({ ...prev, ward: value }))
     }
@@ -296,7 +302,7 @@ export default function ProfilePage() {
                         id="profile-name"
                         type="text"
                         placeholder="Nguyễn Văn A"
-                        value={profileData.fullname}
+                        value={profileData.fullname ?? ""}
                         onChange={(e) => setProfileData({ ...profileData, fullname: e.target.value })}
                         className={`pl-10 ${profileErrors.fullname ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
                       />
@@ -331,7 +337,7 @@ export default function ProfilePage() {
                         id="profile-phone"
                         type="tel"
                         placeholder="0123456789"
-                        value={profileData.phone}
+                        value={profileData.phone ?? ""}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                         className={`pl-10 ${profileErrors.phone ? "border-red-500" : "border-amber-200 focus:border-amber-500"}`}
                       />
@@ -380,7 +386,7 @@ export default function ProfilePage() {
                         id="delivery-address"
                         type="text"
                         placeholder="Số nhà, tên đường"
-                        value={profileData.address}
+                        value={profileData.address ?? ""}
                         onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                         className="pl-10 border-amber-200 focus:border-amber-500"
                       />
@@ -390,11 +396,11 @@ export default function ProfilePage() {
 
                   <AddressInput
                     onLocationChange={handleLocationChange}
-                    location={{ province: profileData.province, ward: profileData.ward }}
+                    location={{
+                      province: profileData.province ?? undefined,
+                      ward: profileData.ward ?? undefined
+                    }}
                   />
-
-                  
-
                   <Button
                     type="submit"
                     disabled={isLoading}

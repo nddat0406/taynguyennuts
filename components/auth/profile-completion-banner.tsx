@@ -5,29 +5,40 @@ import Link from "next/link"
 import { X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { checkProfileComplete } from "@/app/(client)/(auth)/action/auth"
+import { useAuth } from "@/contexts/auth-context"
 
 export function ProfileCompletionBanner() {
+  const { user, authLoading } = useAuth()
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
-  useEffect(() => {
-    const checkProfile = async () => {
-      const dismissed = localStorage.getItem("profile-banner-dismissed")
-      if (dismissed === "true") {
-        setIsDismissed(true)
-        return
-      }
-
-      const { isComplete, hasProfile } = await checkProfileComplete()
-
-      // Show banner if user has a profile but it's not complete
-      if (hasProfile && !isComplete) {
-        setIsVisible(true)
-      }
+  const checkProfile = async () => {
+    const dismissed = localStorage.getItem("profile-banner-dismissed")
+    if (dismissed === "true") {
+      setIsDismissed(true)
+      setIsVisible(false)
+      return
     }
 
-    checkProfile()
-  }, [])
+    const { isComplete, hasProfile } = await checkProfileComplete()
+
+    if (hasProfile && !isComplete) {
+      setIsVisible(true)
+    } else {
+      setIsVisible(false)
+    }
+  }
+
+  useEffect(() => {
+    // Only check when user exists and auth loading finished
+    if (!authLoading && user) {
+      checkProfile()
+    }
+    // If user logs out, hide the banner
+    if (!authLoading && !user) {
+      setIsVisible(false)
+    }
+  }, [user, authLoading]) // 👈 re-run whenever user state changes
 
   const handleDismiss = () => {
     setIsVisible(false)

@@ -54,7 +54,6 @@ export default async function HomePage() {
         <section className="scroll-snap-section">
           <CtaSection />
         </section>
-        
       </main>
       <Suspense fallback={null}>
         <OrderSuccessToast />

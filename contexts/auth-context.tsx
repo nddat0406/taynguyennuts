@@ -9,7 +9,7 @@ import { User } from "@/types"
 interface AuthContextType {
   user: User | null
   supabaseUser: SupabaseUser | null
-  isLoading: boolean
+  authLoading: boolean
   refreshUser: () => Promise<void>
 }
 
@@ -18,14 +18,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
 
+
   const loadUserProfile = async (authUser: SupabaseUser) => {
     setSupabaseUser(authUser)
-    
-    // Fetch profile data from profiles table
     const { data: profile } = await supabase
       .from("profiles")
       .select("*")
@@ -33,22 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single()
 
     if (profile) {
-      setUser({
-        id: authUser.id,
-        email: authUser.email!,
-        profile: { ...profile },
-      })
+      setUser({ id: authUser.id, email: authUser.email!, profile: { ...profile } })
     } else {
-      // User exists but no profile yet
-      setUser({
-        id: authUser.id,
-        email: authUser.email!,
-      })
+      setUser({ id: authUser.id, email: authUser.email! })
     }
   }
 
   const refreshUser = async () => {
-    setIsLoading(true)
+    setAuthLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
@@ -58,13 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSupabaseUser(null)
       }
     } finally {
-      setIsLoading(false)
+      setAuthLoading(false)
     }
   }
 
   useEffect(() => {
     const loadUser = async () => {
-      setIsLoading(true)
+      setAuthLoading(true)
       try {
         const { data: { session } } = await supabase.auth.getSession()
 
@@ -75,28 +66,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSupabaseUser(null)
         }
       } finally {
-        setIsLoading(false)
+        setAuthLoading(false)
       }
     }
 
     loadUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth event:", event)
-        setIsLoading(true)
-        try {
-          if (session?.user) {
-            loadUserProfile(session.user)
-          } else {
-            setUser(null)
-            setSupabaseUser(null)
-          }
-        } finally {
-          setIsLoading(false)
-        }
+const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setAuthLoading(true)
+      if (session?.user) {
+        // fire and forget — no await here
+        loadUserProfile(session.user)
+          .catch((err) => console.error("Error in auth state change:", err))
+          .finally(() => setAuthLoading(false))
+      } else {
+        setUser(null)
+        setSupabaseUser(null)
+        setAuthLoading(false)
       }
-    )
+    }
+  )
+
 
     return () => {
       subscription.unsubscribe()
@@ -108,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         supabaseUser,
-        isLoading,
+        authLoading,
         refreshUser,
       }}
     >

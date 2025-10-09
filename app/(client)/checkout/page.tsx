@@ -29,7 +29,7 @@ interface CustomerInfo {
   email: string
   phone: string
   address: string
-  city: string
+  province: string
   ward: string
   notes: string
 }
@@ -79,7 +79,7 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     address: "",
-    city: "",
+    province: "",
     ward: "",
     notes: "",
   });
@@ -90,13 +90,13 @@ export default function CheckoutPage() {
     useEffect(() => {
     if (user) {
       setCustomerInfo({
-        fullName: user.name || "",
+        fullName: user.profile?.fullname || "",
         email: user.email || "",
-        phone: user.phone || "",
-        address: user.address || "",
-        city: user.city || "",
-        ward: user.ward || "",
-        notes: user.notes || "",
+        phone: user.profile?.phone || "",
+        address: user.profile?.address || "",
+        province: user.profile?.province || "",
+        ward: user.profile?.ward || "",
+        notes: "",
       })
     }
   }, [user])
@@ -133,14 +133,14 @@ export default function CheckoutPage() {
 
   const handleLocationChange = (field: string, value: string) => {
     if (field === "province") {
-      setCustomerInfo((prev) => ({ ...prev, city: value }))
+      setCustomerInfo((prev) => ({ ...prev, province: value }))
     } else if (field === "ward") {
       setCustomerInfo((prev) => ({ ...prev, ward: value }))
     }
   }
 
   const validateForm = (): boolean => {
-    const required = ["fullName", "email", "phone", "address", "city"];
+    const required = ["fullName", "email", "phone", "address", "province"];
     return required.every(
       (field) => customerInfo[field as keyof CustomerInfo].trim() !== ""
     );
@@ -170,7 +170,7 @@ const handleSubmitOrder = async () => {
           email: customerInfo.email,
           phone: customerInfo.phone,
           address: customerInfo.address,
-          province: customerInfo.city,
+          province: customerInfo.province,
           ward: customerInfo.ward || "",
           order_status: ORDER_STATUSES.PENDING_CONFIRMATION,
           payment_code: paymentCode,
@@ -310,7 +310,7 @@ const handleSubmitOrder = async () => {
                   </div>
                   <AddressInput
                     onLocationChange={handleLocationChange}
-                    location={{ province: customerInfo.city, ward: customerInfo.ward }}
+                    location={{ province: customerInfo.province, ward: customerInfo.ward }}
                   />
                   <div>
                     <Label htmlFor="notes">Ghi chú đơn hàng</Label>

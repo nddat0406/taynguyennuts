@@ -1,8 +1,32 @@
+"use client"
+
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CompleteProfileForm } from "@/components/auth/complete-profile-form"
+import { useSearchParams } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { use, useEffect } from "react"
 
 export default function CompleteProfilePage() {
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const status = searchParams.get("status")
+
+    if (status === "new_google_user") {
+      toast({
+        title: "Chào mừng bạn!",
+        description: "Vui lòng hoàn thiện thông tin cá nhân để tiếp tục.",
+      })
+    } else if (status === "incomplete_profile") {
+      toast({
+        title: "Đăng nhập thành công!",
+        description: "Vui lòng hoàn thiện thông tin cá nhân của bạn.",
+      })
+    }
+  }, [searchParams, toast])
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 px-4 py-12">
       <div className="w-full max-w-md">

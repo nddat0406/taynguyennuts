@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll() {
@@ -34,16 +34,35 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Check if user has completed profile
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("fullname").eq("id", user.id).single()
+        console.log("[v0] User ID:", user.id)
+        console.log("[v0] User email:", user.email)
 
-        if (!profile || !profile.fullname) {
-          return NextResponse.redirect(`${origin}/complete-profile`)
+        // Check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single()
+
+        // Determine if this is a new signup or existing login
+        const isNewUser = !profile
+        const hasCompletedProfile = profile?.fullname && profile.fullname.trim() !== ""
+
+        // Set appropriate redirect with status message
+        if (isNewUser) {
+          // New user signing up with Google - redirect to profile completion
+          return NextResponse.redirect(`${origin}/complete-profile?status=new_google_user`)
+        } else if (!hasCompletedProfile) {
+          // Existing user but profile not complete - redirect to profile completion
+          return NextResponse.redirect(`${origin}/complete-profile?status=incomplete_profile`)
+        } else {
+          // Existing user with complete profile - redirect to home with success message
+          return NextResponse.redirect(`${origin}/?status=google_login_success`)
         }
       }
 
@@ -52,5 +71,5 @@ export async function GET(request: NextRequest) {
   }
 
   // Return to signup if something went wrong
-  return NextResponse.redirect(`${origin}/signup`)
+  return NextResponse.redirect(`${origin}/signup?status=auth_error`)
 }

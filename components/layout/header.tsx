@@ -28,8 +28,8 @@ export function Header() {
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
     { name: "Tra cứu đơn hàng", href: "/order-tracking" },
-    { name: "Về chúng tôi", href: "/#story" },
-    { name: "Liên hệ", href: "/#contact" },
+    { name: "Về chúng tôi", href: "/about" },
+    { name: "Liên hệ", href: "/contact" },
   ]
 
   const handleLogout = async () => {

@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, User, Phone, MapPin } from "lucide-react"
-import { updateProfile,skipProfileCompletion } from "@/app/(client)/(auth)/action/auth"
+import { updateProfile, skipProfileCompletion } from "@/app/(client)/(auth)/action/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Profile } from "@/types"
+import AddressInput from "../ui/address-input"
 export function CompleteProfileForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +30,13 @@ export function CompleteProfileForm() {
     fullname?: string
     phone?: string
   }>({})
-
+  const handleLocationChange = (field: string, value: string) => {
+    if (field === "province") {
+      setFormData((prev) => ({ ...prev, province: value, ward: "" }))
+    } else if (field === "ward") {
+      setFormData((prev) => ({ ...prev, ward: value }))
+    }
+  }
   const validateForm = () => {
     const newErrors: {
       fullname?: string
@@ -71,6 +78,7 @@ export function CompleteProfileForm() {
           title: "Thành công",
           description: "Hồ sơ của bạn đã được hoàn thiện!",
         })
+        router.push("/")
       }
       // Server action will redirect on success
     } catch (error: any) {
@@ -82,7 +90,7 @@ export function CompleteProfileForm() {
     }
   }
 
-const handleSkip = async () => {
+  const handleSkip = async () => {
     setIsSkipping(true)
     try {
       await skipProfileCompletion()
@@ -138,10 +146,20 @@ const handleSkip = async () => {
         </div>
         {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
       </div>
-
+      <div className="space-y-2">
+        <div className="relative">
+          <AddressInput
+            onLocationChange={handleLocationChange}
+            location={{
+              province: formData.province ?? undefined,
+              ward: formData.ward ?? undefined
+            }}
+          />
+        </div>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="address" className="text-amber-900">
-          Địa chỉ
+          Địa chỉ cụ thể
         </Label>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -156,39 +174,9 @@ const handleSkip = async () => {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="city" className="text-amber-900">
-          Thành phố
-        </Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            id="city"
-            type="text"
-            placeholder="Hồ Chí Minh"
-            value={formData.province ?? ""}
-            onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-            className="pl-10 border-amber-200 focus:border-amber-500"
-          />
-        </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="ward" className="text-amber-900">
-          Phường/Xã
-        </Label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            id="ward"
-            type="text"
-            placeholder="Phường 1"
-            value={formData.ward ?? ""}
-            onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
-            className="pl-10 border-amber-200 focus:border-amber-500"
-          />
-        </div>
-      </div>
+
+
 
       <div className="flex gap-3 pt-2">
         <Button

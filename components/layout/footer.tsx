@@ -9,7 +9,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-6">
               <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">TN</span>
+                <img src="/logo.jpg" alt="Tây Nguyên Nuts" />
               </div>
               <span className="text-2xl font-bold">Tây Nguyên Nuts</span>
             </div>
@@ -39,18 +39,18 @@ export function Footer() {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-orange-300" />
-                <span className="text-amber-100">0123 456 789</span>
+                <span className="text-amber-100">0979938675</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-orange-300" />
-                <span className="text-amber-100">info@taynyguennuts.vn</span>
+                <span className="text-amber-100">taynguyennuts.exe201@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-orange-300 mt-1" />
                 <span className="text-amber-100">
-                  123 Đường ABC, Quận XYZ
+                  Đại học FPT Hà Nội
                   <br />
-                  TP. Hồ Chí Minh, Việt Nam
+                  Khu Công Nghệ Cao Hòa Lạc, km 29, Đại lộ, Thăng Long, Hà Nội
                 </span>
               </div>
             </div>
@@ -60,10 +60,10 @@ export function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-6">Liên kết</h3>
             <div className="space-y-3">
-              <a href="#products" className="block text-amber-100 hover:text-white transition-colors">
+              <a href="/products" className="block text-amber-100 hover:text-white transition-colors">
                 Sản phẩm
               </a>
-              <a href="#story" className="block text-amber-100 hover:text-white transition-colors">
+              <a href="/about" className="block text-amber-100 hover:text-white transition-colors">
                 Câu chuyện
               </a>
               <a href="#" className="block text-amber-100 hover:text-white transition-colors">

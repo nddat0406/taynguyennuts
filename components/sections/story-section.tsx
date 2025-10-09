@@ -42,26 +42,34 @@ export function StorySection() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <img
-                src="/placeholder.svg?height=250&width=300"
+                src="/nongdanthuhoachcafe.jpg"
                 alt="Nông dân thu hoạch cà phê"
                 className="w-full h-60 object-cover rounded-2xl shadow-lg"
+                height={250}
+                width={300}
               />
               <img
-                src="/placeholder.svg?height=200&width=300"
+                src="/hạt điều.jpg"
                 alt="Chế biến hạt điều"
                 className="w-full h-48 object-cover rounded-2xl shadow-lg"
+                width={300}
+                height={200}
               />
             </div>
             <div className="space-y-4 mt-8">
               <img
-                src="/placeholder.svg?height=200&width=300"
+                src="/vuonMacca.png"
                 alt="Vườn macca Tây Nguyên"
                 className="w-full h-48 object-cover rounded-2xl shadow-lg"
+                height={200}
+                width={300}
               />
               <img
-                src="/placeholder.svg?height=250&width=300"
+                src="/Ca-Phe-8.jpg"
                 alt="Gia đình nông dân"
                 className="w-full h-60 object-cover rounded-2xl shadow-lg"
+                width={300}
+                height={250}
               />
             </div>
           </div>

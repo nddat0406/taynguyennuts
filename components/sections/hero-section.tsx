@@ -1,5 +1,4 @@
 "use client"
-
 import { Button } from "@/components/ui/button"
 import { Leaf, Coffee, Nut, Sparkles } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -27,11 +26,11 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section className="relative min-h-screen amber-gradient overflow-hidden">
+    <section className="relative min-h-screen amber-liner overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-20"
+        className="absolute inset-0 bg-cover bg-center opacity-90"
         style={{
-          backgroundImage: `url('/healthy-meal-bowl.png')`,
+          backgroundImage: `url('/heroSectionBG.jpg')`,
           backgroundAttachment: "fixed",
         }}
       ></div>
@@ -150,13 +149,15 @@ export function HeroSection() {
         <div className="max-w-5xl mx-auto text-center">
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-12 lg:p-16 shadow-2xl border border-amber-200/50 hover:shadow-amber-200/50 transition-all duration-500 group hover:scale-[1.02]">
             {/* Decorative product icons */}
-            <div className="flex justify-center gap-4 mb-8 opacity-60 group-hover:opacity-100 transition-opacity">
+            <div className="flex justify-center gap-4 mb-4 opacity-60 group-hover:opacity-100 transition-opacity">
               <Nut className="w-8 h-8 text-amber-700 animate-bounce-gentle group-hover:scale-110 transition-transform" />
               <Coffee className="w-8 h-8 text-orange-700 animate-wiggle group-hover:scale-110 transition-transform" />
               <Leaf className="w-8 h-8 text-green-700 animate-sway group-hover:scale-110 transition-transform" />
             </div>
-
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-balance">
+            <div className=" rounded-full flex items-center justify-center">
+              <img src="/logo.png" alt="Tây Nguyên Nuts" width={200} height={200} />
+            </div>
+            <h1 className="text-5xl lg:text-6xl font-bold mb-6 text-balance">
               <span className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-600 bg-clip-text text-transparent">
                 Hương vị Tây Nguyên
               </span>
@@ -171,6 +172,10 @@ export function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
+                onClick={() => {
+                  const productsSection = document.getElementById("products")
+                  productsSection?.scrollIntoView({ behavior: "smooth" })
+                }}
                 size="lg"
                 className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-10 py-6 text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all group/btn"
               >
@@ -178,6 +183,10 @@ export function HeroSection() {
                 Khám phá sản phẩm
               </Button>
               <Button
+                onClick={() => {
+                  const storySection = document.getElementById("story")
+                  storySection?.scrollIntoView({ behavior: "smooth" })
+                }}
                 size="lg"
                 variant="outline"
                 className="border-2 border-amber-600 text-amber-700 hover:bg-amber-50 px-10 py-6 text-lg bg-white/50 backdrop-blur hover:scale-105 transition-all"

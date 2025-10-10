@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Package, MapPin, CreditCard, Truck, Clock, CheckCircle, XCircle, ArrowLeft } from "lucide-react"
+import { Package, MapPin, CreditCard, Truck, Clock, CheckCircle, XCircle, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { formatPrice } from "@/utils/utils"
@@ -35,7 +35,7 @@ interface Order {
   items: OrderItem[]
   total: number
   paymentMethod: string
-  status: string
+  order_status: string
   createdAt: string
 }
 
@@ -72,6 +72,31 @@ export default function OrdersPage() {
   const { user, authLoading } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const fetchOrders = async () => {
+    if (!user?.id) return
+
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const response = await fetch(`/api/orders?userId=${encodeURIComponent(user.id)}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Có lỗi xảy ra khi tải đơn hàng")
+        return
+      }
+
+      setOrders(data.orders || [])
+    } catch (error) {
+      console.error("Fetch orders error:", error)
+      setError("Có lỗi xảy ra khi tải đơn hàng")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -80,15 +105,23 @@ export default function OrdersPage() {
     }
 
     if (user) {
-      const storedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
-      const userOrders = storedOrders.filter((order: Order) => order.customerInfo.email === user.email)
-      setOrders(userOrders)
-      setIsLoading(false)
+      fetchOrders()
     }
   }, [user, authLoading, router])
 
   if (authLoading || isLoading) {
-    return null
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-600 mx-auto mb-4" />
+              <p className="text-gray-600">Đang tải danh sách đơn hàng...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   const getPaymentMethodLabel = (method: string) => {
@@ -130,7 +163,28 @@ export default function OrdersPage() {
             <p className="text-gray-600">Xem và theo dõi tất cả đơn hàng của bạn</p>
           </div>
 
-          {orders.length === 0 ? (
+          {error && (
+            <Card className="mb-6 border-red-200 bg-red-50">
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <XCircle className="w-5 h-5 text-red-600" />
+                    <p className="text-red-800">{error}</p>
+                  </div>
+                  <Button 
+                    onClick={fetchOrders}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    Thử lại
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {orders.length === 0 && !error ? (
             <Card className="border-amber-200 shadow-xl">
               <CardContent className="py-16 text-center">
                 <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -147,7 +201,7 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-6">
               {orders.map((order) => {
-                const status = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending
+                const status = statusConfig[order.order_status] || statusConfig.pending
                 const StatusIcon = status.icon
 
                 return (
@@ -203,20 +257,25 @@ export default function OrdersPage() {
                         <h3 className="font-semibold text-gray-900">Sản phẩm đã đặt</h3>
                         {order.items.map((item, index) => (
                           <div key={index} className="flex items-center gap-4 p-3 bg-amber-50 rounded-lg">
-                            <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex-shrink-0">
-                              <img
-                                src={item.product.image || "/placeholder.svg"}
-                                alt={item.product.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
+                            {item.product.image && (
+                              <div className="w-16 h-16 rounded-lg overflow-hidden bg-white flex-shrink-0">
+                                <img
+                                  src={item.product.image}
+                                  alt={item.product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-900 truncate">{item.product.name}</h4>
                               <p className="text-sm text-gray-600">Số lượng: {item.quantity}</p>
+                              <p className="text-sm text-gray-500">
+                                Đơn giá: {formatPrice(Number(item.product.price) || 0)}
+                              </p>
                             </div>
                             <div className="text-right">
                               <p className="font-semibold text-amber-700">
-                                {formatPrice((Number(item.product.price) ?? 9999999999999999) * item.quantity)}
+                                {formatPrice((Number(item.product.price) || 0) * item.quantity)}
                               </p>
                             </div>
                           </div>
@@ -227,7 +286,7 @@ export default function OrdersPage() {
 
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold text-gray-900">Tổng cộng:</span>
-                        <span className="text-2xl font-bold text-amber-700">{formatPrice((Number(order.total) ?? 9999999999999999))}</span>
+                        <span className="text-2xl font-bold text-amber-700">{formatPrice(Number(order.total) || 0)}</span>
                       </div>
 
                       {order.customerInfo.notes && (

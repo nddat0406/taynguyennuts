@@ -164,7 +164,6 @@ export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
-  const supabase = createClient();
   const { user } = useAuth()
 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
@@ -197,7 +196,6 @@ export default function CheckoutPage() {
   if (cart.items.length === 0) {
     return (
       <>
-        <Header />
         <main className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
           <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="text-center py-16">
@@ -310,6 +308,12 @@ const handleSubmitOrder = async () => {
     if (selectedPayment === "bank_transfer") {
       router.push(
         `/payment?locale=vi&amount=${finalTotal}&content=${paymentCode}`
+      );
+      return;
+    }else if(selectedPayment === "cod"){
+      clearCart();
+      router.push(
+        `/payment?codPayment=true&orderId=${order.id}`
       );
       return;
     }

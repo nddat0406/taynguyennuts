@@ -311,7 +311,6 @@ const handleSubmitOrder = async () => {
       );
       return;
     }else if(selectedPayment === "cod"){
-      clearCart();
       router.push(
         `/payment?codPayment=true&orderId=${order.id}`
       );

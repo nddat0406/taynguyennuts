@@ -19,7 +19,7 @@ const OrderSuccessSection = ({ orderInfo }: OrderSuccessSectionProps) => {
 
     return (
         <div className=" bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-3xl">
+            <div className="w-full ">
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-6">
                         <div className="flex items-center gap-3 mb-2">

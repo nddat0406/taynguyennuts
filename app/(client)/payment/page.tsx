@@ -7,6 +7,99 @@ import Image from "next/image";
 import RealtimeOrders from "@/components/realtime-orders";
 import { createClient } from "@/utils/supabase/client";
 
+const sendAdminPaidOrderNotification = async (orderInfo: any) => {
+  try {
+    const adminEmail = process.env.NEXT_PUBLIC_MAIL_ADMIN;
+    if (!adminEmail) {
+      console.warn("Admin email not configured");
+      return;
+    }
+
+    const productRows = orderInfo.order_details
+      ?.map(
+        (item: any) => `
+          <tr>
+            <td style="padding:8px;border:1px solid #ddd;">${item.products.name}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${item.quantity}</td>
+            <td style="padding:8px;border:1px solid #ddd;">
+              ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(Number(item.products.price || 0))}
+            </td>
+            <td style="padding:8px;border:1px solid #ddd;">
+              ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(Number(item.products.price * item.quantity || 0))}
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #059669;">💰 Đơn hàng đã thanh toán - Tây Nguyên Nuts</h2>
+        <div style="background: #D1FAE5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin: 0; color: #047857;">Thông tin đơn hàng</h3>
+          <p style="margin: 5px 0;"><strong>Mã đơn hàng:</strong> ${orderInfo.payment_code}</p>
+          <p style="margin: 5px 0;"><strong>Ngày đặt:</strong> ${new Date(orderInfo.created_at).toLocaleString("vi-VN")}</p>
+          <p style="margin: 5px 0;"><strong>Trạng thái:</strong> Đã thanh toán</p>
+          <p style="margin: 5px 0;"><strong>Phương thức thanh toán:</strong> Chuyển khoản ngân hàng</p>
+        </div>
+        
+        <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin: 0 0 10px 0; color: #374151;">Thông tin khách hàng</h3>
+          <p style="margin: 5px 0;"><strong>Tên:</strong> ${orderInfo.name}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${orderInfo.email}</p>
+          <p style="margin: 5px 0;"><strong>Số điện thoại:</strong> ${orderInfo.phone}</p>
+          <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> ${orderInfo.address}, ${orderInfo.ward}, ${orderInfo.province}</p>
+          ${orderInfo.note ? `<p style="margin: 5px 0;"><strong>Ghi chú:</strong> ${orderInfo.note}</p>` : ''}
+        </div>
+
+        <h3 style="color: #374151;">Chi tiết sản phẩm:</h3>
+        <table style="width:100%;border-collapse:collapse;margin: 20px 0;">
+          <tr style="background:#F3F4F6;">
+            <th style="padding:12px;border:1px solid #ddd;text-align:left;">Sản phẩm</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:center;">Số lượng</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:right;">Đơn giá</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:right;">Thành tiền</th>
+          </tr>
+          ${productRows}
+        </table>
+        
+        <div style="background: #D1FAE5; padding: 15px; border-radius: 8px; text-align: right;">
+          <p style="margin: 0; font-size: 18px; font-weight: bold; color: #047857;">
+            Tổng cộng: ${new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(orderInfo.total || 0)}
+          </p>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #FEF3C7; border-radius: 8px;">
+          <p style="margin: 0; color: #92400E; font-weight: bold;">
+            ✅ Đơn hàng đã được thanh toán! Vui lòng chuẩn bị và giao hàng.
+          </p>
+        </div>
+      </div>
+    `;
+
+    await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: adminEmail,
+        subject: `💰 Đơn hàng đã thanh toán ${orderInfo.payment_code} - ${orderInfo.name}`,
+        html: htmlContent,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to send admin paid order notification:", error);
+  }
+};
+
 const response = {
   vi: {
     title: "CK Ngân Hàng",
@@ -141,6 +234,9 @@ useEffect(() => {
         html: htmlContent,
       }),
     });
+
+    // Send admin notification for paid order
+    await sendAdminPaidOrderNotification(orderInfo);
   };
 
   sendEmail();

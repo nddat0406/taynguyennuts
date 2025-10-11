@@ -70,12 +70,19 @@ export const COMPANY_VALUES: CompanyValue[] = [
     icon: "💬",
   },
 ]
-export const ORDER_STATUSES = {
+export const ORDER_STATUSES: Record<string, string> = {
   PENDING_CONFIRMATION: "Chờ xác nhận",
   PENDING_PICKUP: "Chờ lấy hàng",
   SHIPPING: "Đang giao hàng",
   DELIVERED: "Đã giao hàng",
 } as const
+
+export const orderStatusMap: Record<string, string> = {
+  pending: "Chờ xác nhận",
+  confirmed: "Chờ lấy hàng",
+  shipping: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+}
 
 export type OrderStatus = typeof ORDER_STATUSES[keyof typeof ORDER_STATUSES]
 

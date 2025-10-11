@@ -6,20 +6,25 @@ import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Package, Truck, CheckCircle, Clock } from "lucide-react"
+import { Search, Package, Truck, CheckCircle, Clock, Loader2 } from "lucide-react"
 
 interface OrderStatus {
   id: string
-  status: "pending" | "confirmed" | "shipping" | "delivered"
+  order_status: "pending" | "confirmed" | "shipping" | "delivered"
   date: string
   items: Array<{
     name: string
     quantity: number
     price: number
+    image?: string | null
   }>
   total: number
   customerName: string
   address: string
+  phone?: string
+  email?: string
+  note?: string
+  paymentStatus?: string
 }
 
 const ORDER_STATUSES = {
@@ -65,34 +70,29 @@ export default function TrackOrderPage() {
     setError("")
     setOrderData(null)
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock data - replace with actual API call
-      const mockOrder: OrderStatus = {
-        id: orderCode,
-        status: "shipping",
-        date: "2024-01-15",
-        items: [
-          { name: "Hạt điều rang muối", quantity: 2, price: 150000 },
-          { name: "Cà phê Arabica", quantity: 1, price: 200000 },
-        ],
-        total: 500000,
-        customerName: "Nguyễn Văn A",
-        address: "123 Đường ABC, Quận 1, TP.HCM",
+    try {
+      const response = await fetch(`/api/order-tracking?code=${encodeURIComponent(orderCode.trim())}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Có lỗi xảy ra khi tra cứu đơn hàng")
+        return
       }
 
-      // Check if order exists (mock validation)
-      if (orderCode.length >= 6) {
-        setOrderData(mockOrder)
+      if (data.order) {
+        setOrderData(data.order)
       } else {
         setError("Không tìm thấy đơn hàng với mã này")
       }
-
+    } catch (error) {
+      console.error("Search error:", error)
+      setError("Có lỗi xảy ra khi tra cứu đơn hàng")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
-  const statusInfo = orderData ? ORDER_STATUSES[orderData.status] : null
+  const statusInfo = orderData ? ORDER_STATUSES[orderData.order_status] : null
   const StatusIcon = statusInfo?.icon
 
   return (
@@ -120,19 +120,24 @@ export default function TrackOrderPage() {
                         setError("")
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                        if (e.key === "Enter" && !isLoading) {
                           handleSearch()
                         }
                       }}
                       className="h-12 text-lg border-amber-300 focus:border-amber-500"
+                      disabled={isLoading}
                     />
                   </div>
                   <Button
                     onClick={handleSearch}
                     disabled={isLoading}
-                    className="h-12 px-8 bg-amber-600 hover:bg-amber-700 text-white"
+                    className="h-12 px-8 bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50"
                   >
-                    <Search className="w-5 h-5 mr-2" />
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Search className="w-5 h-5 mr-2" />
+                    )}
                     {isLoading ? "Đang tìm..." : "Tra cứu"}
                   </Button>
                 </div>
@@ -141,6 +146,13 @@ export default function TrackOrderPage() {
                   <p className="mt-4 text-red-600 text-sm flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-red-600 rounded-full" />
                     {error}
+                  </p>
+                )}
+                
+                {orderData && !error && (
+                  <p className="mt-4 text-green-600 text-sm flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Tìm thấy đơn hàng thành công!
                   </p>
                 )}
               </CardContent>
@@ -167,10 +179,21 @@ export default function TrackOrderPage() {
                     <div>
                       <h3 className="font-semibold text-amber-900 mb-2">Thông tin khách hàng</h3>
                       <p className="text-gray-700">{orderData.customerName}</p>
+                      {orderData.phone && (
+                        <p className="text-gray-600 text-sm mt-1">📞 {orderData.phone}</p>
+                      )}
+                      {orderData.email && (
+                        <p className="text-gray-600 text-sm">✉️ {orderData.email}</p>
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-amber-900 mb-2">Ngày đặt hàng</h3>
                       <p className="text-gray-700">{new Date(orderData.date).toLocaleDateString("vi-VN")}</p>
+                      {orderData.paymentStatus && (
+                        <p className="text-gray-600 text-sm mt-1">
+                          💳 Trạng thái thanh toán: {orderData.paymentStatus === "cod" ? "COD" : "Đã thanh toán"}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -180,6 +203,16 @@ export default function TrackOrderPage() {
                     <p className="text-gray-700">{orderData.address}</p>
                   </div>
 
+                  {/* Order Notes */}
+                  {orderData.note && (
+                    <div>
+                      <h3 className="font-semibold text-amber-900 mb-2">Ghi chú đơn hàng</h3>
+                      <p className="text-gray-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                        {orderData.note}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Order Items */}
                   <div>
                     <h3 className="font-semibold text-amber-900 mb-3">Sản phẩm đã đặt</h3>
@@ -187,13 +220,29 @@ export default function TrackOrderPage() {
                       {orderData.items.map((item, index) => (
                         <div
                           key={index}
-                          className="flex justify-between items-center py-3 border-b border-gray-100 last:border-0"
+                          className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-0"
                         >
+                          {item.image && (
+                            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
                           <div className="flex-1">
                             <p className="font-medium text-gray-900">{item.name}</p>
                             <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
+                            <p className="text-sm text-gray-500">
+                              Đơn giá: {item.price.toLocaleString("vi-VN")}đ
+                            </p>
                           </div>
-                          <p className="font-semibold text-amber-900">{item.price.toLocaleString("vi-VN")}đ</p>
+                          <div className="text-right">
+                            <p className="font-semibold text-amber-900">
+                              {(item.price * item.quantity).toLocaleString("vi-VN")}đ
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -215,9 +264,11 @@ export default function TrackOrderPage() {
                     <div className="space-y-4">
                       {Object.entries(ORDER_STATUSES).map(([key, status]) => {
                         const Icon = status.icon
-                        const isActive =
-                          Object.keys(ORDER_STATUSES).indexOf(key) <=
-                          Object.keys(ORDER_STATUSES).indexOf(orderData.status)
+                        const statusOrder = ["pending", "confirmed", "shipping", "delivered"]
+                        const currentStatusIndex = statusOrder.indexOf(orderData.order_status)
+                        const currentItemIndex = statusOrder.indexOf(key)
+                        const isActive = currentItemIndex <= currentStatusIndex
+                        const isCurrent = currentItemIndex === currentStatusIndex
 
                         return (
                           <div
@@ -226,13 +277,18 @@ export default function TrackOrderPage() {
                           >
                             <div
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                isActive ? status.bgColor : "bg-gray-100"
+                                isCurrent ? status.bgColor : isActive ? "bg-gray-200" : "bg-gray-100"
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isActive ? status.color : "text-gray-400"}`} />
+                              <Icon className={`w-5 h-5 ${
+                                isCurrent ? status.color : isActive ? "text-gray-600" : "text-gray-400"
+                              }`} />
                             </div>
-                            <span className={`font-medium ${isActive ? "text-gray-900" : "text-gray-400"}`}>
+                            <span className={`font-medium ${
+                              isCurrent ? "text-gray-900" : isActive ? "text-gray-700" : "text-gray-400"
+                            }`}>
                               {status.label}
+                              {isCurrent && <span className="ml-2 text-sm text-amber-600">(Hiện tại)</span>}
                             </span>
                           </div>
                         )

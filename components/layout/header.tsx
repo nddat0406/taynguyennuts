@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { CartDrawer } from "@/components/cart/cart-drawer"
-import { Menu, X, User, LogOut, UserCircle, Package } from "lucide-react"
+import { Menu, X, User, LogOut, UserCircle, Package, Settings } from "lucide-react"
 import { useState } from "react"
 import {
   DropdownMenu,
@@ -75,6 +75,12 @@ export function Header() {
     return emailInitial
   }
 
+  const isAdmin = () => {
+    if (!user?.email) return false
+    const adminEmail = process.env.NEXT_PUBLIC_MAIL_ADMIN
+    return user.email === adminEmail
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-amber-100">
       <div className="max-w-7xl mx-auto px-4">
@@ -137,6 +143,14 @@ export function Header() {
                         Lịch sử đơn hàng
                       </Link>
                     </DropdownMenuItem>
+                    {isAdmin() && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/orders" className="cursor-pointer">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
                       <LogOut className="w-4 h-4 mr-2" />
@@ -214,6 +228,19 @@ export function Header() {
                         Lịch sử đơn hàng
                       </Link>
                     </Button>
+                    {isAdmin() && (
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="w-full justify-start border-blue-200 text-blue-900 hover:bg-blue-50 bg-transparent"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Link href="/admin/orders">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50 bg-transparent"

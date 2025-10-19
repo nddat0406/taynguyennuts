@@ -1,5 +1,7 @@
 
 import { Leaf, Coffee, Nut, Sparkles } from "lucide-react"
+import Image from "next/image"
+import { Suspense } from "react"
 import HeroDecorations from "./hero-decorations.client"
 import HeroActions from "./hero-actions.client"
 
@@ -9,18 +11,24 @@ export const dynamic = "force-dynamic"
 export function HeroSection() {
   return (
     <section className="relative min-h-screen amber-liner overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-90"
-        style={{
-          backgroundImage: `url('/heroSectionBG.avif')`,
-          backgroundAttachment: "fixed",
-        }}
-      ></div>
+      {/* Background image using next/image for better LCP handling */}
+      <div className="absolute inset-0 -z-10 opacity-90">
+        <Image
+          src="/heroSectionBG.avif"
+          alt="Hero background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
       <div className="absolute inset-0 nut-pattern"></div>
 
-      {/* Client-only decorations (mouse & scroll animations) */}
-      <HeroDecorations />
+      {/* Client-only decorations (mouse & scroll animations) — load non-blocking */}
+      <Suspense fallback={null}>
+        <HeroDecorations />
+      </Suspense>
 
       <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-100px)] px-4">
         <div className="max-w-5xl mx-auto text-center">
@@ -32,7 +40,7 @@ export function HeroSection() {
               <Leaf className="w-8 h-8 text-green-700 animate-sway group-hover:scale-110 transition-transform" />
             </div>
             <div className=" rounded-full flex items-center justify-center">
-              <img src="/logo.png" alt="Tây Nguyên Nuts" width={200} height={200} />
+              <Image src="/logo.avif" alt="Tây Nguyên Nuts" width={200} height={200} priority />
             </div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6 text-balance">
               <span className="bg-gradient-to-r from-amber-700 via-orange-600 to-amber-600 bg-clip-text text-transparent">

@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic"
 export function HeroSection() {
   return (
     <section className="relative min-h-screen amber-liner overflow-hidden">
-      {/* Background image using next/image for better LCP handling */}
-      <div className="absolute inset-0 -z-10 opacity-90">
+      {/* Background image using next/image with fixed positioning to emulate background-attachment: fixed */}
+      <div className="fixed inset-0 -z-10 opacity-90 pointer-events-none">
         <Image
           src="/heroSectionBG.avif"
           alt="Hero background"
@@ -25,7 +25,7 @@ export function HeroSection() {
 
       <div className="absolute inset-0 nut-pattern"></div>
 
-      {/* Client-only decorations (mouse & scroll animations) — load non-blocking */}
+      {/* Client-only decorations (mouse & scroll animations) — non-blocking */}
       <Suspense fallback={null}>
         <HeroDecorations />
       </Suspense>

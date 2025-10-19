@@ -201,7 +201,8 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-6">
               {orders.map((order) => {
-                const status = statusConfig[order.order_status] || statusConfig.pending
+                type StatusKey = keyof typeof statusConfig
+                const status = statusConfig[order.order_status as StatusKey] || statusConfig.pending
                 const StatusIcon = status.icon
 
                 return (

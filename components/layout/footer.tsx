@@ -9,7 +9,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-6">
               <div className=" rounded-full flex items-center justify-center">
-                <img src="/logo.png" alt="Tây Nguyên Nuts" width={96} height={96} />
+                <img src="/logo.avif" alt="Tây Nguyên Nuts" width={96} height={96} />
               </div>
               <span className="text-2xl font-bold">Tây Nguyên Nuts</span>
             </div>

@@ -88,7 +88,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="rounded-full flex items-center justify-center">
-              <img src="/logo.png" alt="Tây Nguyên Nuts"  width={48} height={48} />
+              <img src="/logo.avif" alt="Tây Nguyên Nuts"  width={48} height={48} />
             </div>
             <span className="font-bold text-xl text-amber-900">Tây Nguyên Nuts</span>
           </Link>

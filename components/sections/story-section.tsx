@@ -42,14 +42,14 @@ export function StorySection() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <img
-                src="/nongdanthuhoachcafe.jpg"
+                src="/nongdanthuhoachcafe.avif"
                 alt="Nông dân thu hoạch cà phê"
                 className="w-full h-60 object-cover rounded-2xl shadow-lg"
                 height={250}
                 width={300}
               />
               <img
-                src="/hạt điều.jpg"
+                src="/xuLyHatMacca.avif"
                 alt="Chế biến hạt điều"
                 className="w-full h-48 object-cover rounded-2xl shadow-lg"
                 width={300}
@@ -58,14 +58,14 @@ export function StorySection() {
             </div>
             <div className="space-y-4 mt-8">
               <img
-                src="/vuonMacca.png"
+                src="/vuonMacca.avif"
                 alt="Vườn macca Tây Nguyên"
                 className="w-full h-48 object-cover rounded-2xl shadow-lg"
                 height={200}
                 width={300}
               />
               <img
-                src="/Ca-Phe-8.jpg"
+                src="/Ca-Phe-8.avif"
                 alt="Gia đình nông dân"
                 className="w-full h-60 object-cover rounded-2xl shadow-lg"
                 width={300}

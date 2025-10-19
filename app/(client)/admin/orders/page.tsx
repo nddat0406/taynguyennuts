@@ -177,14 +177,22 @@ export default function AdminOrdersPage() {
         throw new Error(data.error || "Failed to update order");
       }
 
-      // Update local state
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId
-            ? { ...order, order_status: status, payment_status: paymentStatus || order.payment_status }
-            : order
-        )
-      );
+      // Update local state with data from API response
+      if (data.order) {
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === orderId
+              ? { 
+                  ...order, 
+                  order_status: data.order.order_status, 
+                  payment_status: data.order.payment_status,
+                  shipping_fee: data.order.shipping_fee,
+                  total_amount: data.order.total_amount
+                }
+              : order
+          )
+        );
+      }
 
       alert("Cập nhật trạng thái đơn hàng thành công!");
       closeEditModal();

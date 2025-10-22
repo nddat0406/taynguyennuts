@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, Truck, MapPin, User } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, MapPin, User, Tag } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,127 @@ import AddressInput from "@/components/ui/address-input"
 import { ORDER_STATUSES } from "@/utils/constants";
 import { useAuth } from "@/contexts/auth-context";
 import { formatPrice } from "@/utils/utils";
+import { DiscountCodeModal } from "@/components/discount-code-modal";
+import type { DiscountCode } from "@/types";
+
+const sendAdminNotificationEmail = async (order: any, cartItems: any[]) => {
+  try {
+    const adminEmail = process.env.NEXT_PUBLIC_MAIL_ADMIN;
+    if (!adminEmail) {
+      console.warn("Admin email not configured");
+      return;
+    }
+
+    const productRows = cartItems
+      .map(
+        (item) => `
+          <tr>
+            <td style="padding:8px;border:1px solid #ddd;">${item.product.name}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${item.quantity}</td>
+            <td style="padding:8px;border:1px solid #ddd;">
+              ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(Number(item.product.price || 0))}
+            </td>
+            <td style="padding:8px;border:1px solid #ddd;">
+              ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(Number(item.product.price * item.quantity || 0))}
+            </td>
+          </tr>
+        `
+      )
+      .join("");
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #B45309;">🛒 Đơn hàng mới từ Tây Nguyên Nuts</h2>
+        <div style="background: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin: 0; color: #92400E;">Thông tin đơn hàng</h3>
+          <p style="margin: 5px 0;"><strong>Mã đơn hàng:</strong> ${order.payment_code}</p>
+          <p style="margin: 5px 0;"><strong>Ngày đặt:</strong> ${new Date(order.created_at).toLocaleString("vi-VN")}</p>
+          <p style="margin: 5px 0;"><strong>Trạng thái:</strong> ${order.order_status}</p>
+          <p style="margin: 5px 0;"><strong>Phương thức thanh toán:</strong> ${order.payment_status === "cod" ? "COD" : "Chuyển khoản"}</p>
+        </div>
+        
+        <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin: 0 0 10px 0; color: #374151;">Thông tin khách hàng</h3>
+          <p style="margin: 5px 0;"><strong>Tên:</strong> ${order.name}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${order.email}</p>
+          <p style="margin: 5px 0;"><strong>Số điện thoại:</strong> ${order.phone}</p>
+          <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> ${order.address}, ${order.ward}, ${order.province}</p>
+          ${order.note ? `<p style="margin: 5px 0;"><strong>Ghi chú:</strong> ${order.note}</p>` : ''}
+        </div>
+
+        <h3 style="color: #374151;">Chi tiết sản phẩm:</h3>
+        <table style="width:100%;border-collapse:collapse;margin: 20px 0;">
+          <tr style="background:#F3F4F6;">
+            <th style="padding:12px;border:1px solid #ddd;text-align:left;">Sản phẩm</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:center;">Số lượng</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:right;">Đơn giá</th>
+            <th style="padding:12px;border:1px solid #ddd;text-align:right;">Thành tiền</th>
+          </tr>
+          ${productRows}
+        </table>
+        
+        <div style="background: #FEF3C7; padding: 15px; border-radius: 8px;">
+          ${order.discount_amount && order.discount_amount > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Tạm tính:</span>
+              <span>${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.original_total || 0)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #059669;">
+              <span>Giảm giá (${order.discount_value}%):</span>
+              <span>-${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.discount_amount)}</span>
+            </div>
+            <div style="border-top: 1px solid #D97706; padding-top: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #92400E;">
+                <span>Tổng cộng:</span>
+                <span>${new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(order.total || 0)}</span>
+              </div>
+            </div>
+          ` : `
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #92400E; text-align: right;">
+              Tổng cộng: ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.total || 0)}
+            </p>
+          `}
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #FEF2F2; border-radius: 8px;">
+          <p style="margin: 0; color: #991B1B; font-weight: bold;">
+            ⚠️ Vui lòng xử lý đơn hàng này trong thời gian sớm nhất!
+          </p>
+        </div>
+      </div>
+    `;
+
+    await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: adminEmail,
+        subject: `🛒 Đơn hàng mới ${order.payment_code} - ${order.name}`,
+        html: htmlContent,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to send admin notification email:", error);
+  }
+};
 
 interface CustomerInfo {
   fullName: string
@@ -86,6 +207,8 @@ export default function CheckoutPage() {
 
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(null);
 
     useEffect(() => {
     if (user) {
@@ -156,8 +279,9 @@ const handleSubmitOrder = async () => {
 
   setIsSubmitting(true);
 
+  const discountAmount = calculateDiscountAmount();
   const shippingFee = cart.total >= 500000 ? 0 : 30000;
-  const finalTotal = cart.total + shippingFee;
+  const finalTotal = cart.total - discountAmount + shippingFee;
   const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
 
   try {
@@ -178,7 +302,13 @@ const handleSubmitOrder = async () => {
             selectedPayment === "bank_transfer" ? "pending" : "cod",
           total: finalTotal,
           note: customerInfo.notes || "",
-          created_at: new Date().toISOString(),
+          user_id: user?.id || null,
+          discount_code_id: selectedDiscount?.id || null,
+          discount_code: selectedDiscount?.code || null,
+          discount_value: selectedDiscount?.value || null,
+          discount_type: 'percentage',
+          discount_amount: discountAmount || null,
+          original_total: cart.total,
         },
       ])
       .select()
@@ -189,18 +319,31 @@ const handleSubmitOrder = async () => {
     }
     const orderDetails = cart.items.map((item) => ({
       order_id: order.id,
-      product_id: item.product.id,
+      product_id: Number(item.product.id),
       quantity: item.quantity,
-      created_at: new Date().toISOString(),
     }));
 
-    const { error: detailError } = await supabase
-      .from("order_details")
-      .insert(orderDetails);
+    const orderDetailsResponse = await fetch('/api/order-details', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        orderId: order.id,
+        orderDetails: orderDetails
+      })
+    });
 
-    if (detailError) {
-      throw detailError;
+    const orderDetailsData = await orderDetailsResponse.json();
+
+    if (!orderDetailsResponse.ok) {
+      console.error("Order details insert error:", orderDetailsData.error);
+      throw new Error(orderDetailsData.error || "Có lỗi xảy ra khi tạo chi tiết đơn hàng");
     }
+
+    // Send admin notification email
+    await sendAdminNotificationEmail(order, cart.items);
+
     if (selectedPayment === "bank_transfer") {
       router.push(
         `/payment?locale=vi&amount=${finalTotal}&content=${paymentCode}`
@@ -225,8 +368,23 @@ const handleSubmitOrder = async () => {
 };
 
 
+  const calculateDiscountAmount = () => {
+    if (!selectedDiscount) return 0;
+    
+    let discountAmount = 0;
+    cart.items.forEach((item) => {
+      if (selectedDiscount.productIds.length === 0 || selectedDiscount.productIds.includes(item.product.id)) {
+        const itemPrice = Number(item.product.price || 0) * item.quantity;
+        discountAmount += itemPrice * (selectedDiscount.value / 100);
+      }
+    });
+    
+    return discountAmount;
+  };
+
+  const discountAmount = calculateDiscountAmount();
   const shippingFee = cart.total >= 500000 ? 0 : 30000; 
-  const finalTotal = cart.total + shippingFee;
+  const finalTotal = cart.total - discountAmount + shippingFee;
 
   return (
     <>
@@ -408,6 +566,31 @@ const handleSubmitOrder = async () => {
                       <span>Tạm tính:</span>
                       <span>{formatPrice(cart.total)}</span>
                     </div>
+                    
+                    <div className="border-t pt-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-amber-800 border-amber-300 hover:bg-amber-50"
+                        onClick={() => setDiscountModalOpen(true)}
+                      >
+                        <Tag className="w-4 h-4 mr-2" />
+                        {selectedDiscount ? (
+                          <span className="flex-1 text-left">
+                            Mã: {selectedDiscount.code} (-{selectedDiscount.value}%)
+                          </span>
+                        ) : (
+                          <span className="flex-1 text-left">Chọn mã giảm giá</span>
+                        )}
+                      </Button>
+                    </div>
+
+                    {selectedDiscount && discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Giảm giá:</span>
+                        <span>-{formatPrice(discountAmount)}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between">
                       <span>Phí vận chuyển:</span>
                       <span
@@ -460,6 +643,14 @@ const handleSubmitOrder = async () => {
             </div>
           </div>
         </div>
+
+        <DiscountCodeModal
+          open={discountModalOpen}
+          onOpenChange={setDiscountModalOpen}
+          cartItems={cart.items}
+          onSelectDiscount={setSelectedDiscount}
+          selectedDiscountId={selectedDiscount?.id}
+        />
       </main>
     </>
   );

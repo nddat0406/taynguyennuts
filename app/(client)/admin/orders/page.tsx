@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2, Edit2 } from "lucide-react";
 import { orderStatusMap } from "@/utils/constants";
+import { AdminNav } from "@/components/admin/admin-nav";
 
 interface OrderItem {
   id: number;
@@ -33,6 +34,13 @@ interface Order {
   note: string | null;
   created_at: string;
   items: OrderItem[];
+  discount_code: {
+    id: string;
+    code: string;
+    value: number;
+  } | null;
+  discount_amount: number;
+  original_total: number | null;
 }
 
 interface Pagination {
@@ -265,10 +273,13 @@ export default function AdminOrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-600 mx-auto mb-4" />
-          <p className="mt-4 text-gray-600">Đang tải danh sách đơn hàng...</p>
+      <div className="min-h-screen bg-gray-50">
+        <AdminNav />
+        <div className="flex items-center justify-center pt-20">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-amber-600 mx-auto mb-4" />
+            <p className="mt-4 text-gray-600">Đang tải danh sách đơn hàng...</p>
+          </div>
         </div>
       </div>
     );
@@ -276,17 +287,20 @@ export default function AdminOrdersPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Lỗi truy cập</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchOrders}
-            className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
-          >
-            Thử lại
-          </button>
+      <div className="min-h-screen bg-gray-50">
+        <AdminNav />
+        <div className="flex items-center justify-center pt-20">
+          <div className="text-center">
+            <div className="text-red-500 text-xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Lỗi truy cập</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={fetchOrders}
+              className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
+            >
+              Thử lại
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -294,6 +308,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdminNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -368,6 +383,9 @@ export default function AdminOrdersPage() {
                     Sản phẩm
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mã giảm giá
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tổng tiền
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -403,9 +421,35 @@ export default function AdminOrdersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      {order.discount_code ? (
+                        <div>
+                          <div className="text-sm font-medium text-green-600">
+                            {order.discount_code.code}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Giảm {order.discount_code.value}%
+                          </div>
+                          {order.discount_amount > 0 && (
+                            <div className="text-xs text-red-600">
+                              -{formatCurrency(order.discount_amount)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-400">
+                          Không có
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {formatCurrency(order.total_amount)}
                       </div>
+                      {order.original_total && order.original_total > order.total_amount && (
+                        <div className="text-xs text-gray-400 line-through">
+                          {formatCurrency(order.original_total)}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-500">
                         Phí ship: {formatCurrency(order.shipping_fee)}
                       </div>

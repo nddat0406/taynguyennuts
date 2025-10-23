@@ -35,6 +35,11 @@ export async function GET(request: NextRequest) {
             price,
             product_images (url)
           )
+        ),
+        discount_codes (
+          id,
+          code,
+          value
         )
       `)
       .order("created_at", { ascending: false });
@@ -80,7 +85,19 @@ export async function GET(request: NextRequest) {
       }, 0) || 0;
       
       const shippingFee = subtotal >= 500000 ? 0 : 30000;
-      const totalAmount = subtotal + shippingFee;
+      const discountAmount = order.discount_amount || 0;
+      const originalTotal = order.original_total || (subtotal + shippingFee);
+      const totalAmount = order.total || (originalTotal - discountAmount);
+
+      const discountInfo = order.discount_code || order.discount_value ? {
+        id: order.discount_code_id || '',
+        code: order.discount_code || (order.discount_codes?.code) || 'N/A',
+        value: order.discount_value || (order.discount_codes?.value) || 0
+      } : (order.discount_codes ? {
+        id: order.discount_codes.id,
+        code: order.discount_codes.code,
+        value: order.discount_codes.value
+      } : null);
 
       return {
         id: order.id,
@@ -98,6 +115,9 @@ export async function GET(request: NextRequest) {
         payment_status: order.payment_status,
         note: order.note,
         created_at: order.created_at,
+        discount_code: discountInfo,
+        discount_amount: discountAmount,
+        original_total: discountAmount > 0 ? originalTotal : null,
         items: order.order_details?.map((detail: any) => ({
           id: detail.id,
           quantity: detail.quantity,

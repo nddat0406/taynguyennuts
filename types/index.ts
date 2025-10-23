@@ -21,6 +21,12 @@ export interface Product {
   usage_instructions: string | null
   weight: number
   product_images: ProductImages[] | null
+  bestDiscount?: {
+    id: string
+    code: string
+    value: number
+    discountedPrice: number
+  }
 }
 
 export interface User {
@@ -90,4 +96,24 @@ export interface CartContextType {
   clearCart: () => void
   isInCart: (productId: number) => boolean
   getItemQuantity: (productId: number) => number
+}
+
+export interface DiscountCode {
+  id: string
+  code: string
+  value: number
+  startDate: string
+  endDate: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  productIds: number[]
+}
+
+export interface AppliedDiscount {
+  code: string
+  discountCodeId: string
+  discountValue: number
+  discountType: "percentage" | "amount"
+  productIds: number[]
 }

@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, Truck, MapPin, User } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, MapPin, User, Tag } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,8 @@ import AddressInput from "@/components/ui/address-input"
 import { ORDER_STATUSES } from "@/utils/constants";
 import { useAuth } from "@/contexts/auth-context";
 import { formatPrice } from "@/utils/utils";
+import { DiscountCodeModal } from "@/components/discount-code-modal";
+import type { DiscountCode } from "@/types";
 
 const sendAdminNotificationEmail = async (order: any, cartItems: any[]) => {
   try {
@@ -86,13 +88,39 @@ const sendAdminNotificationEmail = async (order: any, cartItems: any[]) => {
           ${productRows}
         </table>
         
-        <div style="background: #FEF3C7; padding: 15px; border-radius: 8px; text-align: right;">
-          <p style="margin: 0; font-size: 18px; font-weight: bold; color: #92400E;">
-            Tổng cộng: ${new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(order.total || 0)}
-          </p>
+        <div style="background: #FEF3C7; padding: 15px; border-radius: 8px;">
+          ${order.discount_amount && order.discount_amount > 0 ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Tạm tính:</span>
+              <span>${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.original_total || 0)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #059669;">
+              <span>Giảm giá (${order.discount_value}%):</span>
+              <span>-${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.discount_amount)}</span>
+            </div>
+            <div style="border-top: 1px solid #D97706; padding-top: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #92400E;">
+                <span>Tổng cộng:</span>
+                <span>${new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(order.total || 0)}</span>
+              </div>
+            </div>
+          ` : `
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #92400E; text-align: right;">
+              Tổng cộng: ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(order.total || 0)}
+            </p>
+          `}
         </div>
         
         <div style="margin-top: 30px; padding: 15px; background: #FEF2F2; border-radius: 8px;">
@@ -178,6 +206,8 @@ export default function CheckoutPage() {
 
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [selectedDiscount, setSelectedDiscount] = useState<DiscountCode | null>(null);
 
     useEffect(() => {
     if (user) {
@@ -247,8 +277,9 @@ const handleSubmitOrder = async () => {
 
   setIsSubmitting(true);
 
+  const discountAmount = calculateDiscountAmount();
   const shippingFee = cart.total >= 500000 ? 0 : 30000;
-  const finalTotal = cart.total + shippingFee;
+  const finalTotal = cart.total - discountAmount + shippingFee;
   const paymentCode = `DH${generateRandomString(6).toUpperCase()}`;
 
   try {
@@ -270,6 +301,12 @@ const handleSubmitOrder = async () => {
           total: finalTotal,
           note: customerInfo.notes || "",
           user_id: user?.id || null,
+          discount_code_id: selectedDiscount?.id || null,
+          discount_code: selectedDiscount?.code || null,
+          discount_value: selectedDiscount?.value || null,
+          discount_type: 'percentage',
+          discount_amount: discountAmount || null,
+          original_total: cart.total,
         },
       ])
       .select()
@@ -334,8 +371,23 @@ const handleSubmitOrder = async () => {
 };
 
 
+  const calculateDiscountAmount = () => {
+    if (!selectedDiscount) return 0;
+    
+    let discountAmount = 0;
+    cart.items.forEach((item) => {
+      if (selectedDiscount.productIds.length === 0 || selectedDiscount.productIds.includes(item.product.id)) {
+        const itemPrice = Number(item.product.price || 0) * item.quantity;
+        discountAmount += itemPrice * (selectedDiscount.value / 100);
+      }
+    });
+    
+    return discountAmount;
+  };
+
+  const discountAmount = calculateDiscountAmount();
   const shippingFee = cart.total >= 500000 ? 0 : 30000; 
-  const finalTotal = cart.total + shippingFee;
+  const finalTotal = cart.total - discountAmount + shippingFee;
 
   return (
     <>
@@ -517,6 +569,31 @@ const handleSubmitOrder = async () => {
                       <span>Tạm tính:</span>
                       <span>{formatPrice(cart.total)}</span>
                     </div>
+                    
+                    <div className="border-t pt-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-amber-800 border-amber-300 hover:bg-amber-50"
+                        onClick={() => setDiscountModalOpen(true)}
+                      >
+                        <Tag className="w-4 h-4 mr-2" />
+                        {selectedDiscount ? (
+                          <span className="flex-1 text-left">
+                            Mã: {selectedDiscount.code} (-{selectedDiscount.value}%)
+                          </span>
+                        ) : (
+                          <span className="flex-1 text-left">Chọn mã giảm giá</span>
+                        )}
+                      </Button>
+                    </div>
+
+                    {selectedDiscount && discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Giảm giá:</span>
+                        <span>-{formatPrice(discountAmount)}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between">
                       <span>Phí vận chuyển:</span>
                       <span
@@ -569,6 +646,14 @@ const handleSubmitOrder = async () => {
             </div>
           </div>
         </div>
+
+        <DiscountCodeModal
+          open={discountModalOpen}
+          onOpenChange={setDiscountModalOpen}
+          cartItems={cart.items}
+          onSelectDiscount={setSelectedDiscount}
+          selectedDiscountId={selectedDiscount?.id}
+        />
       </main>
     </>
   );

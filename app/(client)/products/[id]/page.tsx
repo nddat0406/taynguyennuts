@@ -1,4 +1,3 @@
-
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Sparkles, Check } from "lucide-react";

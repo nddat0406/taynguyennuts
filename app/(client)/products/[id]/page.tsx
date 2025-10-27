@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Check } from "lucide-react";
-import Link from "next/link";
-import Head from "next/head";
-import { createClient } from "@/utils/supabase/server";
-import { formatPrice } from "@/utils/utils";
-import { cn } from "@/utils/utils";
-import { ProductImageGallery } from "@/components/product/product-image-gallery";
-import { Product, ProductImages } from "@/types";
-import { ProductClientActions } from "@/components/product/product-client-actions";
+import { notFound } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Sparkles, Check, Truck, Shield, RotateCcw } from "lucide-react"
+import Link from "next/link"
+import Head from "next/head"
+import { createClient } from "@/utils/supabase/server"
+import { formatPrice } from "@/utils/utils"
+import { cn } from "@/utils/utils"
+import { ProductImageGallery } from "@/components/product/product-image-gallery"
+import type { Product, ProductImages } from "@/types"
+import { ProductClientActions } from "@/components/product/product-client-actions"
+import { ProductFAQ } from "@/components/product/product-faq"
+import { ProductReviews } from "@/components/product/product-reviews"
 
 interface ProductPageProps {
   params: Promise<{
@@ -17,8 +19,8 @@ interface ProductPageProps {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const { id } = await params
+  const supabase = await createClient()
 
   const { data: product, error } = await supabase
     .from("products")
@@ -42,18 +44,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
       category:category_id (id, name)
     `)
     .eq("id", id)
-    .single<Product>();
+    .single<Product>()
   if (error || !product) {
-    console.error("Error fetching product:", error);
-    notFound();
+    console.error("Error fetching product:", error)
+    notFound()
   }
 
   // Prepare sorted images
   const sortedImages = product.product_images
     ? [...product.product_images].sort(
-      (a: ProductImages, b: ProductImages) => (b.isMainImage ? 1 : 0) - (a.isMainImage ? 1 : 0)
-    )
-    : [];
+        (a: ProductImages, b: ProductImages) => (b.isMainImage ? 1 : 0) - (a.isMainImage ? 1 : 0),
+      )
+    : []
 
   // Prepare key information points
   const keyInfo = [
@@ -61,7 +63,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.ingredients ? { label: "Thành phần", value: product.ingredients } : null,
     product.expiration ? { label: "Hạn sử dụng", value: product.expiration } : null,
     product.storage_instructions ? { label: "Bảo quản", value: product.storage_instructions } : null,
-  ].filter(Boolean); // Remove null entries
+  ].filter(Boolean) // Remove null entries
 
   // Prepare features for highlights
   const features = [
@@ -69,7 +71,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.ingredients ? `Thành phần: ${product.ingredients}` : "Chế biến hiện đại",
     product.packaged_at ? "Đóng gói cẩn thận" : "Bảo đảm chất lượng",
     "Giao hàng toàn quốc",
-  ].slice(0, 3); // Limit to 3 features for brevity
+  ].slice(0, 3) // Limit to 3 features for brevity
 
   return (
     <>
@@ -109,7 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     variant={product.inStock ? "default" : "destructive"}
                     className={cn(
                       "text-sm font-semibold px-4 py-1",
-                      product.inStock && "bg-green-500 hover:bg-green-600"
+                      product.inStock && "bg-green-500 hover:bg-green-600",
                     )}
                   >
                     {product.inStock ? "✓ Còn hàng" : "✗ Hết hàng"}
@@ -131,7 +133,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         <span className="text-gray-600 font-medium">{info.label}:</span>
                         <p className="text-gray-900">{info.value}</p>
                       </div>
-                    ) : null
+                    ) : null,
                   )}
                 </div>
               </div>
@@ -157,6 +159,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-xl shadow-md border border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">Cam kết chất lượng</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col items-center text-center">
+                    <Shield className="w-6 h-6 text-blue-600 mb-2" />
+                    <p className="text-xs font-semibold text-blue-900">Hoàn trả 100%</p>
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <Truck className="w-6 h-6 text-blue-600 mb-2" />
+                    <p className="text-xs font-semibold text-blue-900">Giao 48 giờ</p>
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <RotateCcw className="w-6 h-6 text-blue-600 mb-2" />
+                    <p className="text-xs font-semibold text-blue-900">Đổi 7 ngày</p>
+                  </div>
+                </div>
               </div>
 
               {/* Additional Info (if available) */}
@@ -187,15 +207,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
               )}
             </div>
           </div>
+
+          <div className="mt-16 max-w-4xl">
+            <ProductReviews productName={product.name} />
+            <ProductFAQ productName={product.name} />
+          </div>
         </div>
       </main>
     </>
-  );
+  )
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const { id } = await params
+  const supabase = await createClient()
 
   const { data: product } = await supabase
     .from("products")
@@ -210,16 +235,16 @@ export async function generateMetadata({ params }: ProductPageProps) {
       )
     `)
     .eq("id", id)
-    .single();
+    .single()
 
   if (!product) {
     return {
       title: "Product Not Found",
-    };
+    }
   }
 
-  const mainImage = product.product_images?.find((img) => img.isMainImage)?.url;
-  const shortDescription = product.benefits || product.ingredients || "Chất lượng từ thiên nhiên";
+  const mainImage = product.product_images?.find((img) => img.isMainImage)?.url
+  const shortDescription = product.benefits || product.ingredients || "Chất lượng từ thiên nhiên"
 
   return {
     title: `${product.name} - Tây Nguyên Nuts`,
@@ -229,5 +254,5 @@ export async function generateMetadata({ params }: ProductPageProps) {
       description: `Khám phá ${product.name} - ${shortDescription}`,
       images: mainImage ? [{ url: mainImage, alt: product.name }] : [],
     },
-  };
+  }
 }

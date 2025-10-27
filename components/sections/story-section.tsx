@@ -36,6 +36,21 @@ export function StorySection() {
                 Không chỉ là nơi bán hàng, Tây Nguyên Nuts là cầu nối giữa người tiêu dùng và nông sản đặc sản, góp phần
                 xây dựng lối sống lành mạnh và bền vững.
               </p>
+
+              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-orange-300/30">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-300">100+</div>
+                  <p className="text-sm text-orange-100">Hộ nông dân</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-300">5000+</div>
+                  <p className="text-sm text-orange-100">Hecta đất canh tác</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-300">OCOP</div>
+                  <p className="text-sm text-orange-100">Chứng nhận</p>
+                </div>
+              </div>
             </div>
           </div>
 

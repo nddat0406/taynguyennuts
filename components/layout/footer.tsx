@@ -1,8 +1,35 @@
-import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react"
+import { Facebook, Phone, Mail, MapPin, Shield, Truck, RotateCcw, Leaf } from "lucide-react"
 
 export function Footer() {
   return (
     <footer className="bg-amber-900 text-white">
+      <div className="bg-amber-800 border-t border-b border-amber-700">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="flex flex-col items-center text-center">
+              <Shield className="w-8 h-8 text-orange-300 mb-2" />
+              <h4 className="font-semibold text-sm mb-1">100% Cam kết hoàn trả</h4>
+              <p className="text-xs text-amber-100">Không hài lòng? Hoàn tiền 100%</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Truck className="w-8 h-8 text-orange-300 mb-2" />
+              <h4 className="font-semibold text-sm mb-1">Giao hàng nhanh 48 giờ</h4>
+              <p className="text-xs text-amber-100">Toàn quốc, miễn phí từ 500k</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <RotateCcw className="w-8 h-8 text-orange-300 mb-2" />
+              <h4 className="font-semibold text-sm mb-1">Đổi trả trong 7 ngày</h4>
+              <p className="text-xs text-amber-100">Cam kết chất lượng sản phẩm</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Leaf className="w-8 h-8 text-orange-300 mb-2" />
+              <h4 className="font-semibold text-sm mb-1">Không hương liệu nhân tạo</h4>
+              <p className="text-xs text-amber-100">100% tự nhiên, an toàn</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -32,7 +59,7 @@ export function Footer() {
               </a>
             </div>
           </div>
-    
+
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-6">Liên hệ</h3>
@@ -77,7 +104,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-amber-800 mt-12 pt-8 text-center">
-          <p className="text-amber-200">© 2024 Tây Nguyên Nuts. Tất cả quyền được bảo lưu.</p>
+          <p className="text-amber-200">© 2025 Tây Nguyên Nuts. Tất cả quyền được bảo lưu.</p>
         </div>
       </div>
     </footer>

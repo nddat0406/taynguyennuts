@@ -193,8 +193,13 @@ export default function ProductsPage() {
                 {filteredProducts.map((product) => (
                   <Card
                     key={product.id}
-                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg overflow-hidden"
+                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg overflow-hidden relative"
                   >
+                    {product.bestDiscount && (
+                      <div className="absolute top-4 right-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        -{product.bestDiscount.value}%
+                      </div>
+                    )}
                     <Link href={`/products/${product.id}`}>
                       <div className="aspect-square overflow-hidden bg-amber-50">
                         <img
@@ -247,46 +252,6 @@ export default function ProductsPage() {
                 <p className="text-xl text-gray-600">Không tìm thấy sản phẩm nào trong danh mục này</p>
               </div>
             )}
-          </div>
-        </section>
-
-        {/* Description Section */}
-        <section className="bg-gradient-to-b from-white to-amber-50 py-16 border-t border-amber-200">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-amber-900 mb-8">Mô tả</h2>
-            <div className="space-y-4 text-gray-700">
-              <div className="flex gap-4">
-                <span className="text-amber-800 font-bold">•</span>
-                <p className="leading-relaxed">
-                  Mỗi sản phẩm được trình bày kèm hình ảnh, vùng sản xuất giới thiệu sản phẩm, giá niêm yết nút "
-                  <span className="font-semibold">"Xem chi tiết"</span>" và nút "
-                  <span className="font-semibold">"Thêm vào giỏ"</span>".
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <span className="text-amber-800 font-bold">•</span>
-                <p className="leading-relaxed">
-                  Khách hàng có thể sử dụng bộ lọc tìm kiếm theo các tiêu chí: loại sản phẩm, mức giá và khu vực (vùng
-                  sản xuất). Khi khách hàng chọn tiêu chí lọc, hệ thống sẽ hiển thị những sản phẩm phù hợp.
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <span className="text-amber-800 font-bold">•</span>
-                <p className="leading-relaxed">
-                  Khách hàng click vào nút "<span className="font-semibold">"Xem chi tiết"</span>" để chuyển đến trang
-                  chi tiết từng sản phẩm.
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <span className="text-amber-800 font-bold">•</span>
-                <p className="leading-relaxed">
-                  Khách hàng thêm sản phẩm vào giỏ hàng bằng cách nhấn nút "
-                  <span className="font-semibold">"Thêm vào giỏ hàng"</span>" (được đặt ở ngay cạnh nút "
-                  <span className="font-semibold">"Xem chi tiết"</span>") và click nút "
-                  <span className="font-semibold">"Thêm vào giỏ hàng"</span>" sẽn được thêm vào giỏ của khách hàng.
-                </p>
-              </div>
-            </div>
           </div>
         </section>
       </div>

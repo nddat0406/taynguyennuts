@@ -102,7 +102,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {/* Product Name and Price */}
               <div className="animate-slide-up">
                 <h1 className="text-4xl font-bold text-amber-900 mb-4">{product.name}</h1>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                     {formatPrice(product.price != null ? Number(product.price) : null)}
                   </span>
@@ -116,6 +116,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     {product.inStock ? "✓ Còn hàng" : "✗ Hết hàng"}
                   </Badge>
                 </div>
+                {product.bestDiscount && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                    <p className="text-red-800 font-semibold">
+                      Khuyến mãi: Giảm {product.bestDiscount.value}% - Chỉ còn{" "}
+                      <span className="text-lg font-bold">{formatPrice(product.bestDiscount.discountedPrice)}</span>
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Key Information */}

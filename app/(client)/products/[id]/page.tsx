@@ -10,7 +10,6 @@ import { ProductImageGallery } from "@/components/product/product-image-gallery"
 import type { Product, ProductImages } from "@/types"
 import { ProductClientActions } from "@/components/product/product-client-actions"
 import { ProductFAQ } from "@/components/product/product-faq"
-import { ProductReviews } from "@/components/product/product-reviews"
 
 interface ProductPageProps {
   params: Promise<{
@@ -209,7 +208,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className="mt-16 max-w-4xl">
-            <ProductReviews productName={product.name} />
             <ProductFAQ productName={product.name} />
           </div>
         </div>

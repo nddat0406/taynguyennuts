@@ -1,28 +1,16 @@
 "use client"
 
-import type React from "react"
-
-import { Leaf, Coffee, Nut, Search } from "lucide-react"
+import { Leaf, Coffee, Nut } from "lucide-react"
 import Image from "next/image"
 import { Suspense } from "react"
-import HeroDecorations from "./hero-decorations.client"
-import HeroActions from "./hero-actions.client"
+import HeroDecorations from "./hero-decorations"
+import HeroActions from "./hero-actions"
 import { TrustBadges } from "./trust-badges"
-import { Input } from "@/components/ui/input"
 
 // Force dynamic rendering so this server component is always SSR
 export const dynamic = "force-dynamic"
 
 export function HeroSection() {
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const query = formData.get("search") as string
-    if (query.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(query)}`
-    }
-  }
-
   return (
     <section className="relative min-h-screen amber-liner overflow-hidden">
       {/* Background image using next/image with fixed positioning to emulate background-attachment: fixed */}
@@ -68,20 +56,6 @@ export function HeroSection() {
               Khám phá tinh hoa nông sản Tây Nguyên với hạt điều, macca, cà phê và ca cao nguyên chất từ những vùng đất
               màu mỡ nhất Việt Nam.
             </p>
-
-            <form onSubmit={handleSearch} className="mb-8 max-w-2xl mx-auto">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <Input
-                    type="text"
-                    name="search"
-                    placeholder="Tìm kiếm sản phẩm..."
-                    className="pl-10 py-3 rounded-lg border-amber-200 focus:border-amber-600"
-                  />
-                </div>
-              </div>
-            </form>
 
             {/* Client-only action buttons */}
             <HeroActions />

@@ -70,13 +70,39 @@ export const COMPANY_VALUES: CompanyValue[] = [
     icon: "💬",
   },
 ]
-export const ORDER_STATUSES = {
-  PENDING_CONFIRMATION: "Chờ xác nhận",
-  PENDING_PICKUP: "Chờ lấy hàng",
-  SHIPPING: "Đang giao hàng",
-  DELIVERED: "Đã giao hàng",
-} as const
 
-export type OrderStatus = typeof ORDER_STATUSES[keyof typeof ORDER_STATUSES]
+export const orderStatusMap: Record<string, string> = {
+  pending: "Chờ xác nhận",
+  confirmed: "Chờ lấy hàng",
+  shipping: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+  cancelled: "Đã hủy",
+}
 
-export const ORDER_STATUS_OPTIONS: OrderStatus[] = Object.values(ORDER_STATUSES)
+export const paymentStatusMap: Record<string, string> = {
+  pending: "Chờ thanh toán",
+  paid: "Đã thanh toán",
+  failed: "Thanh toán thất bại",
+  cod: "COD",
+  success: "Thanh toán thành công",
+}
+
+export enum OrderStatus {
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  SHIPPING = "shipping",
+  DELIVERED = "delivered",
+  CANCELLED = "cancelled",
+}
+
+export enum PaymentStatus {
+  PENDING = "pending",
+  PAID = "paid",
+  FAILED = "failed",
+  COD = "cod",
+  SUCCESS = "success",
+}
+
+export const ORDER_STATUS_OPTIONS: OrderStatus[] = Object.values(OrderStatus)
+export const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = Object.values(PaymentStatus)
+

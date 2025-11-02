@@ -14,14 +14,14 @@ import { ProductsGridSkeleton } from "@/components/product-card-skeleton"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { Badge } from "@/components/ui/badge"
 
-// Import the provided interfaces
-import type { Product, Category } from "@/types"
+import type { Product, Category, DiscountCode } from "@/types"
 
 export default function ProductsPage() {
   const { addToCart } = useCart()
   const { toast } = useToast()
   const [selectedCategory, setSelectedCategory] = useState<string>("0")
   const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(true)
@@ -84,17 +84,17 @@ export default function ProductsPage() {
         packaged_at: product.packaged_at,
         storage_instructions: product.storage_instructions,
         usage_instructions: product.usage_instructions,
-        created_at: "", // Placeholder, as it's not fetched
+        created_at: "",
         product_images: product.product_images
           ? product.product_images.map((img: { url: string | null; isMainImage: boolean | null }) => ({
               url: img.url ?? "",
               isMainImage: img.isMainImage ?? false,
-              alt: `${product.name} image`, // Optional: Add default alt text
+              alt: `${product.name} image`,
             }))
           : null,
         category: product.category
           ? { id: product.category.id, name: product.category.name }
-          : { id: 0, name: "Unknown" }, // Fallback for missing category
+          : { id: 0, name: "Unknown" },
       }))
 
       setProducts(formattedProducts)
@@ -104,15 +104,66 @@ export default function ProductsPage() {
     fetchData()
   }, [])
 
-  const filteredProducts =
-    selectedCategory === "0"
-      ? products
-      : products.filter((product) => product.category?.id === Number.parseInt(selectedCategory))
+  useEffect(() => {
+    const fetchDiscountCodes = async () => {
+      try {
+        const response = await fetch("/api/discount-codes")
+        const result = await response.json()
+
+        if (response.ok && result.data) {
+          const discountCodes: DiscountCode[] = result.data
+
+          const productsWithDiscounts = products.map((product) => {
+            const applicableDiscounts = discountCodes.filter((discount) => {
+              if (discount.productIds.length === 0) return true
+              return discount.productIds.includes(product.id)
+            })
+
+            if (applicableDiscounts.length > 0) {
+              const bestDiscount = applicableDiscounts.reduce((best, current) =>
+                current.value > best.value ? current : best,
+              )
+
+              const originalPrice = Number(product.price || 0)
+              const discountedPrice = originalPrice * (1 - bestDiscount.value / 100)
+
+              return {
+                ...product,
+                bestDiscount: {
+                  id: bestDiscount.id,
+                  code: bestDiscount.code,
+                  value: bestDiscount.value,
+                  discountedPrice,
+                },
+              }
+            }
+
+            return product
+          })
+
+          setProducts(productsWithDiscounts)
+        }
+      } catch (error) {
+        console.error("Failed to fetch discount codes:", error)
+      }
+    }
+
+    if (products.length > 0) {
+      fetchDiscountCodes()
+    }
+  }, [])
+
+  useEffect(() => {
+    const filtered =
+      selectedCategory === "0"
+        ? products
+        : products.filter((product) => product.category?.id === Number.parseInt(selectedCategory))
+    setFilteredProducts(filtered)
+  }, [products, selectedCategory])
 
   const handleCategoryChange = async (categoryId: string) => {
     setIsCategoryLoading(true)
     setSelectedCategory(categoryId)
-    // Simulate filtering delay for smooth transition
     await new Promise((resolve) => setTimeout(resolve, 300))
     setIsCategoryLoading(false)
   }

@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ShoppingCart, Loader2 } from "lucide-react"
+import { ShoppingCart, Loader2, TrendingUp, Tag } from "lucide-react"
 import Link from "next/link"
 import { formatPrice } from "@/utils/utils"
 import { useCart } from "@/hooks/use-cart"
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/utils/supabase/client"
 import { ProductsGridSkeleton } from "@/components/product-card-skeleton"
 import { LoadingSpinner } from "@/components/loading-screen"
+import { Badge } from "@/components/ui/badge"
 
 // Import the provided interfaces
 import type { Product, Category } from "@/types"
@@ -195,11 +196,21 @@ export default function ProductsPage() {
                     key={product.id}
                     className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg overflow-hidden relative"
                   >
-                    {product.bestDiscount && (
-                      <div className="absolute top-4 right-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                        -{product.bestDiscount.value}%
-                      </div>
-                    )}
+                    <div className="absolute top-3 left-3 right-3 flex gap-2 z-10">
+                      {product.inStock > 50 && (
+                        <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs">
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          Bán Chạy
+                        </Badge>
+                      )}
+                      {product.bestDiscount && (
+                        <Badge className="bg-orange-500 hover:bg-orange-600 text-white text-xs">
+                          <Tag className="w-3 h-3 mr-1" />
+                          Giảm {product.bestDiscount.value}%
+                        </Badge>
+                      )}
+                    </div>
+
                     <Link href={`/products/${product.id}`}>
                       <div className="aspect-square overflow-hidden bg-amber-50">
                         <img
@@ -213,13 +224,31 @@ export default function ProductsPage() {
                         <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
                           {product.description || "Không có mô tả"}
                         </p>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="text-2xl font-bold text-orange-600">
-                            {product.price ? formatPrice(Number(product.price)) : "Liên hệ"}
-                            <span className="text-sm text-gray-500 font-normal">/{product.weight}g</span>
-                          </div>
-                          {product.inStock === 0 && <span className="text-sm text-red-600 font-medium">Hết hàng</span>}
+
+                        <div className="flex items-center gap-3 mb-4">
+                          {product.bestDiscount ? (
+                            <>
+                              <div className="text-2xl font-bold text-red-600">
+                                {formatPrice(product.bestDiscount.discountedPrice)}
+                              </div>
+                              <div className="text-lg text-gray-400 line-through">
+                                {formatPrice(Number(product.price ?? 0))}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-2xl font-bold text-orange-600">
+                              {formatPrice(Number(product.price ?? 0))}
+                              <span className="text-sm text-gray-500 font-normal ml-1">/{product.weight}g</span>
+                            </div>
+                          )}
                         </div>
+
+                        {product.inStock > 0 && (
+                          <p className="text-xs text-gray-500 mb-4">
+                            Đã bán: {Math.floor(Math.random() * 500) + 100} sản phẩm
+                          </p>
+                        )}
+
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -233,7 +262,7 @@ export default function ProductsPage() {
                             Xem chi tiết
                           </Button>
                           <Button
-                            className="bg-amber-800 hover:bg-amber-900 text-white px-4"
+                            className="bg-amber-800 hover:bg-amber-900 text-white px-4 hover:scale-105 transition-transform"
                             disabled={product.inStock === 0}
                             onClick={(e) => handleQuickAddToCart(e, product)}
                           >

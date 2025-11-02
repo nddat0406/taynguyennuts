@@ -26,6 +26,7 @@ export default function ProductsPage() {
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(true)
   const [isCategoryLoading, setIsCategoryLoading] = useState(false)
+  const [discountsLoaded, setDiscountsLoaded] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,6 +106,9 @@ export default function ProductsPage() {
   }, [])
 
   useEffect(() => {
+    // only run once after products are initially loaded
+    if (products.length === 0 || discountsLoaded) return
+
     const fetchDiscountCodes = async () => {
       try {
         const response = await fetch("/api/discount-codes")
@@ -142,16 +146,15 @@ export default function ProductsPage() {
           })
 
           setProducts(productsWithDiscounts)
+          setDiscountsLoaded(true)
         }
       } catch (error) {
         console.error("Failed to fetch discount codes:", error)
       }
     }
 
-    if (products.length > 0) {
-      fetchDiscountCodes()
-    }
-  }, [])
+    fetchDiscountCodes()
+  }, [products, discountsLoaded])
 
   useEffect(() => {
     const filtered =
